@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Curio — The payment ring (light)</title>
+<meta name="description" content="Curio, the contactless payment ring by CurioLab. One ring, no screen, no charging.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:wght@200;300;400;500&display=swap">
+<style>
+  :root{
+    /* BACKGROUND COLOUR: change these two lines (same colour, hex then r,g,b) */
+    --bg:#ffffff;
+    --bg-rgb:255,255,255;
+    --bg-soft:#f5f5f7;
+    --ink:#1d1d1f;
+    --ink-dim:#6e6e73;
+    --hairline:rgba(29,29,31,.14);
+    --glass:rgba(29,29,31,.05);
+    --glass-strong:rgba(29,29,31,.09);
+    --accent:#8a8a92; /* dark silver, the colour of the ring's bevels */
+    --blue:#4a8dff;
+    --blue-2:#1f5fcc;
+    --card-line:rgba(31,95,204,.28);
+    --card-bg:rgba(255,255,255,.8);
+    --nfc:#2f6fd6;
+  }
+  :root:not([data-theme="light"]) body{ background:var(--bg); }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ } }
+  :root[data-theme="dark"]{ }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:auto; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Outfit',system-ui,sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+  }
+  button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+  a{ color:inherit; text-decoration:none; }
+  #stage{
+    position:fixed; inset:0;
+    z-index:0;
+  }
+  #stage canvas{ display:block; width:100%; height:100%; }
+  #stage.grab{ cursor:grab; }
+  #stage.grabbing{ cursor:grabbing; }
+
+  .veil{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 110%, rgba(var(--bg-rgb),.55), transparent 55%);
+  }
+
+  main{ position:relative; z-index:2; pointer-events:none; }
+  main a, main button, main .hint, main .panel, main .cards, main .logos{ pointer-events:auto; }
+
+  section{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    padding:0 clamp(24px, 7vw, 120px);
+  }
+
+  /* ---------- Shared type ---------- */
+  .eyebrow{
+    font-size:14px; letter-spacing:.04em;
+    color:var(--ink-dim);
+    margin-bottom:14px;
+  }
+  .h2{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    font-size:clamp(34px, 4.6vw, 58px);
+    line-height:1.12;
+    margin-bottom:.45em;
+  }
+  .lede{
+    color:var(--ink-dim);
+    font-size:clamp(15px, 1.5vw, 18px);
+    line-height:1.65;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:12px 26px; border-radius:8px;
+    background:linear-gradient(135deg, var(--blue), var(--blue-2));
+    color:#fff; font-weight:400; font-size:15px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.08) inset, 0 8px 30px rgba(47,111,214,.25);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 0 0 1px rgba(255,255,255,.12) inset, 0 12px 34px rgba(47,111,214,.35); }
+  .btn:active{ transform:none; }
+
+  /* Cards used by "Why businesses" and "From your idea" */
+  .cards{ display:grid; gap:18px; }
+  .card-b{
+    position:relative;
+    border:1px solid var(--card-line);
+    border-radius:18px;
+    background:var(--card-bg);
+    -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+    padding:26px 26px 26px;
+    box-shadow:0 10px 40px rgba(29,29,31,.06);
+  }
+  .card-b h3{
+    font-weight:400;
+    font-size:clamp(18px, 1.7vw, 22px);
+    margin-bottom:10px;
+  }
+  .card-b p, .card-b li{
+    color:var(--ink-dim);
+    font-size:clamp(14px, 1.3vw, 15.5px);
+    line-height:1.6;
+  }
+  .card-b ul{ list-style:none; }
+  .card-b li::before{ content:"▪"; font-size:.7em; margin-right:8px; color:var(--ink-dim); vertical-align:middle; }
+  .icon{
+    width:46px; height:46px; border-radius:10px; flex:none;
+    background:linear-gradient(160deg, #8fbcff, #3d7be0);
+    display:grid; place-items:center;
+    box-shadow:0 6px 20px rgba(61,123,224,.35);
+  }
+  .icon svg{ width:24px; height:24px; stroke:#ffffff; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:18px;
+  }
+  .wordmark{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    font-size:clamp(52px, 9vw, 128px);
+    letter-spacing:.02em;
+    line-height:1;
+  }
+  .wordmark .star{
+    display:inline-block;
+    font-size:.38em;
+    vertical-align:.95em;
+    margin:0 .06em 0 .02em;
+    color:var(--accent);
+  }
+  .hero p{
+    font-size:clamp(17px, 2vw, 22px);
+    color:var(--ink-dim);
+    max-width:34ch;
+    line-height:1.5;
+  }
+  .scroll-cue{
+    position:absolute; bottom:34px; left:50%;
+    transform:translateX(-50%);
+    width:1px; height:56px;
+    background:linear-gradient(var(--ink) 0%, transparent 100%);
+    opacity:.5;
+    animation:cue 2.4s ease-in-out infinite;
+  }
+  /* Light theme: soft halo so the wordmark stays readable over the dark ring */
+  .hero{ justify-content:flex-start; padding-top:14vh; }
+  .closer h2{ text-shadow:0 0 10px var(--bg), 0 0 24px var(--bg), 0 0 44px var(--bg); }
+  .closer .hint{ background:rgba(var(--bg-rgb),.7); }
+  @keyframes cue{
+    0%,100%{ transform:translateX(-50%) scaleY(.4); transform-origin:top; opacity:.25; }
+    50%{ transform:translateX(-50%) scaleY(1); opacity:.6; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .scroll-cue{ animation:none; }
+  }
+
+  /* ---------- Why businesses trust our expertise ---------- */
+  .why{
+    padding-top:12vh; padding-bottom:12vh;
+  }
+  .why .grid{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr);
+    gap:clamp(28px, 5vw, 80px);
+    align-items:start;
+  }
+  .why .intro{ max-width:34em; padding-top:2vh; }
+  .why .intro .btn{ margin-top:28px; }
+  .why .cards{ grid-template-columns:1fr; }
+  .why .card-b{ display:flex; gap:20px; align-items:center; justify-content:space-between; }
+
+  /* ---------- Our partners ---------- */
+  .partners{
+    min-height:60vh;
+    padding-top:6vh; padding-bottom:6vh;
+  }
+  .partners .row{
+    width:100%;
+    display:flex; align-items:center; gap:clamp(28px, 5vw, 80px);
+    flex-wrap:wrap;
+  }
+  .partners .h2{ margin:0; min-width:5.5em; }
+  .logos{
+    display:flex; align-items:center; flex-wrap:wrap;
+    gap:clamp(18px, 3vw, 48px);
+    flex:1;
+  }
+  .logo{
+    display:inline-flex; align-items:center; gap:8px;
+    font-weight:500; letter-spacing:.06em; text-transform:uppercase;
+    font-size:clamp(15px, 1.5vw, 20px);
+    color:var(--ink);
+    opacity:.85;
+    transition:opacity .2s ease;
+    white-space:nowrap;
+  }
+  .logo:hover{ opacity:1; }
+  .logo img{ height:34px; width:auto; display:block; }
+  .logo--visa{ font-style:italic; font-weight:600; letter-spacing:.02em; font-size:clamp(20px, 2vw, 28px); color:#1a4fbf; }
+  .logo--mc{ gap:0; }
+  .logo--mc i{ display:block; width:28px; height:28px; border-radius:50%; }
+  .logo--mc i:first-child{ background:#eb001b; }
+  .logo--mc i:last-child{ background:#f79e1b; margin-left:-10px; mix-blend-mode:multiply; }
+  .logo--infineon{ text-transform:none; font-weight:400; letter-spacing:0; font-size:clamp(20px, 2vw, 26px); color:#0a5fc2; }
+  .logo--nxp{ font-weight:600; letter-spacing:.1em; color:#6f7f10; }
+  .logo--usc{ text-transform:none; letter-spacing:0; font-weight:400; line-height:1; }
+  .logo--usc small{ display:block; font-size:.55em; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-dim); }
+
+  /* ---------- Discover the ring (explorer) ---------- */
+  .explorer{
+    align-items:center;
+    padding-top:12vh; padding-bottom:12vh;
+  }
+  .explorer .panel{
+    width:min(100%, 460px);
+    position:relative;
+    padding-left:52px;
+  }
+  .explorer h2{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    font-size:clamp(32px, 3.6vw, 48px);
+    line-height:1.12;
+    margin-bottom:.45em;
+  }
+  .explorer .lede{ margin-bottom:1.6em; }
+  .explorer .arrows{
+    position:absolute; left:0; top:50%;
+    transform:translateY(-50%);
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .arrow{
+    width:36px; height:36px; border-radius:50%;
+    border:1px solid var(--hairline);
+    background:var(--glass);
+    display:grid; place-items:center;
+    transition:background .25s ease, opacity .25s ease, transform .2s ease;
+  }
+  .arrow svg{ width:16px; height:16px; }
+  .arrow:hover{ background:var(--glass-strong); }
+  .arrow:active{ transform:scale(.94); }
+  .arrow:disabled{ opacity:.3; cursor:default; }
+
+  .features{ list-style:none; display:flex; flex-direction:column; gap:10px; }
+  .feature__btn{
+    display:inline-flex; align-items:center; gap:12px;
+    padding:11px 22px 11px 12px;
+    border-radius:999px;
+    border:1px solid var(--hairline);
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    font-size:clamp(15px, 1.4vw, 17px);
+    font-weight:400;
+    letter-spacing:.01em;
+    text-align:left;
+    transition:background .25s ease, border-color .25s ease, transform .2s ease;
+  }
+  .feature__btn:hover{ background:var(--glass-strong); border-color:rgba(29,29,31,.3); }
+  .feature__btn:active{ transform:scale(.985); }
+  .feature__plus{
+    width:24px; height:24px; border-radius:50%;
+    border:1px solid var(--ink);
+    position:relative; flex:none;
+  }
+  .feature__plus::before, .feature__plus::after{
+    content:""; position:absolute; background:var(--ink);
+    top:50%; left:50%; transform:translate(-50%,-50%);
+  }
+  .feature__plus::before{ width:10px; height:1px; }
+  .feature__plus::after{ width:1px; height:10px; }
+  .feature__swatch{
+    width:24px; height:24px; border-radius:50%; flex:none;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);
+  }
+  .feature__card{
+    display:none;
+    border:1px solid var(--hairline);
+    border-radius:26px;
+    background:var(--card-bg);
+    -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px);
+    box-shadow:0 10px 40px rgba(29,29,31,.06);
+    padding:20px 24px 22px;
+    color:var(--ink-dim);
+    font-size:clamp(14px, 1.35vw, 16px);
+    line-height:1.6;
+    animation:cardIn .5s ease;
+  }
+  .feature__card b{ color:var(--ink); font-weight:400; }
+  .feature.is-active .feature__btn{ display:none; }
+  .feature.is-active .feature__card{ display:block; }
+  @keyframes cardIn{
+    from{ opacity:0; transform:translateY(-6px); }
+    to{ opacity:1; transform:none; }
+  }
+  .swatches{ display:flex; gap:12px; margin-top:16px; }
+  .swatch{
+    width:26px; height:26px; border-radius:50%;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .swatch:hover{ transform:scale(1.08); }
+  .swatch[aria-pressed="true"]{
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 2px var(--bg), 0 0 0 3px var(--ink);
+  }
+  .sizes{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .size{
+    min-width:40px; height:34px; padding:0 12px;
+    border-radius:10px; border:1px solid var(--hairline);
+    font-size:14px; color:var(--ink);
+    transition:background .2s ease, color .2s ease;
+  }
+  .size:hover{ background:var(--glass); }
+  .size[aria-pressed="true"]{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+  /* ---------- How it works ---------- */
+  .how{
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    gap:clamp(28px, 5vh, 56px);
+    padding-top:12vh; padding-bottom:12vh;
+  }
+  .how .head{ max-width:30em; }
+  .steps{
+    list-style:none;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:clamp(20px, 3vw, 44px);
+    width:100%;
+  }
+  .step{
+    border-top:1px solid var(--hairline);
+    padding-top:18px;
+    max-width:24em;
+  }
+  .step .num{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    font-size:clamp(36px, 4vw, 52px);
+    line-height:1;
+    color:var(--accent);
+    display:block;
+    margin-bottom:12px;
+  }
+  .step h3{
+    font-weight:400;
+    font-size:clamp(17px, 1.6vw, 20px);
+    margin-bottom:8px;
+  }
+  .step p{
+    color:var(--ink-dim);
+    font-size:clamp(14px, 1.35vw, 16px);
+    line-height:1.6;
+  }
+
+  /* ---------- From your idea to implementation ---------- */
+  .idea{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:clamp(24px, 4vh, 44px);
+    padding-top:12vh; padding-bottom:12vh;
+  }
+  .idea .head{ max-width:42em; }
+  .idea .head .h2{ margin-bottom:.3em; }
+  .idea .cards{
+    width:100%;
+    grid-template-columns:repeat(3, 1fr);
+    text-align:left;
+  }
+  .idea .card-b{ min-height:230px; }
+  .idea .card-b .icon{ position:absolute; top:22px; right:22px; }
+  .idea .card-b h3{ margin-top:70px; }
+
+  /* ---------- Closer ---------- */
+  .closer{
+    flex-direction:column;
+    justify-content:center;
+    text-align:center;
+    gap:10px;
+    min-height:120vh;
+  }
+  .closer h2{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    font-size:clamp(34px, 4.6vw, 58px);
+  }
+  .closer .hint{
+    display:inline-flex; align-items:center; gap:10px;
+    color:var(--ink-dim);
+    font-size:15px;
+    border:1px solid var(--hairline);
+    border-radius:999px;
+    padding:10px 22px;
+    margin-top:6px;
+    user-select:none;
+  }
+  .closer .hint svg{ opacity:.7; }
+  .closer .spacer{ flex:1; min-height:44vh; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    position:relative; z-index:2;
+    padding:60px clamp(24px, 7vw, 120px) 40px;
+    color:var(--ink-dim);
+    font-size:14px;
+    line-height:1.7;
+    border-top:1px solid var(--hairline);
+    background:var(--bg);
+  }
+  footer .cols{
+    display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:32px;
+    padding-bottom:36px; border-bottom:1px solid var(--hairline);
+  }
+  footer .fm{
+    font-family:'Cormorant Garamond',serif;
+    color:var(--ink);
+    font-size:26px;
+    margin-bottom:8px;
+  }
+  footer h4{ color:var(--ink); font-weight:400; font-size:16px; margin-bottom:6px; }
+  footer .legal{ display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-top:22px; font-size:13px; }
+
+  /* ---------- Reveal ---------- */
+  .hero > *, .closer h2, .closer .hint, .explorer .panel, .how > *, .why > *, .partners > *, .idea > *{
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity .9s ease, transform .9s ease;
+  }
+  .inview > *, .inview h2, .inview .hint, .inview .panel{
+    opacity:1; transform:none;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero > *, .closer h2, .closer .hint, .explorer .panel, .how > *, .why > *, .partners > *, .idea > *{ transition:none; opacity:1; transform:none; }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:1000px){
+    .why .grid{ grid-template-columns:1fr; }
+    .idea .cards{ grid-template-columns:1fr 1fr; }
+    footer .cols{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:900px){
+    .steps{ grid-template-columns:1fr; gap:22px; }
+    .how{ justify-content:flex-end; padding-bottom:10vh; }
+  }
+  @media (max-width:680px){
+    .explorer{ align-items:flex-end; padding-top:44vh; padding-bottom:6vh; }
+    .explorer .panel{
+      padding-left:0; width:100%;
+      background:linear-gradient(rgba(var(--bg-rgb),0), rgba(var(--bg-rgb),.78) 22%);
+      padding-top:26px;
+    }
+    .features{ gap:8px; }
+    .explorer .arrows{ position:static; transform:none; flex-direction:row; margin-bottom:12px; }
+    .explorer h2{ font-size:clamp(30px, 8vw, 40px); }
+    .explorer .lede{ margin-bottom:1em; }
+    .how{ background:linear-gradient(rgba(var(--bg-rgb),0), rgba(var(--bg-rgb),.6) 25%); }
+    .why{ padding-top:8vh; }
+    .why .card-b{ flex-direction:column; align-items:flex-start; }
+    .idea .cards{ grid-template-columns:1fr; }
+    .idea .card-b{ min-height:0; }
+    .partners .row{ flex-direction:column; align-items:flex-start; gap:20px; }
+    footer .cols{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+<div class="veil"></div>
+
+<main>
+  <!-- ===== Hero ===== -->
+  <section class="hero" id="hero">
+    <div class="wordmark">Curio<span class="star">✦</span></div>
+    <p>Payment at your fingertip. One ring, no screen, no charging.</p>
+    <div class="scroll-cue" aria-hidden="true"></div>
+  </section>
+
+  <!-- ===== Why businesses trust our expertise ===== -->
+  <section class="why" id="why" data-view="why">
+    <div class="grid">
+      <div class="intro">
+        <p class="eyebrow">Why Choose Us</p>
+        <h2 class="h2">Why Businesses Trust Our Expertise</h2>
+        <p class="lede">With customer's best interest in mind, we offer our expertise and industry knowledge to deliver solutions with innovation and efficiency.</p>
+        <a class="btn" href="#contact">Get In Touch</a>
+      </div>
+      <div class="cards">
+        <article class="card-b">
+          <div>
+            <h3>Our Expertise</h3>
+            <ul>
+              <li>Wearables Manufacturing</li>
+              <li>Advanced engineering</li>
+              <li>Hardware-software integration</li>
+              <li>Rigorous quality control</li>
+            </ul>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></span>
+        </article>
+        <article class="card-b">
+          <div>
+            <h3>Strong And Reliable Partnerships</h3>
+            <ul>
+              <li>End-to-end logistics providers</li>
+              <li>Prepaid and Tokenisation Integrations</li>
+              <li>Bespoke and mass product manufacturing partners</li>
+            </ul>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M3 12h3M18 12h3"/></svg></span>
+        </article>
+        <article class="card-b">
+          <div>
+            <h3>Proven Track Record</h3>
+            <p>Partnering with Digiseq, a number of successful projects have been delivered, from common wearable product to sophisticated wearable-based event management solutions now available commercially.</p>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5 7 21l5-2.5L17 21l-1.5-7.5"/></svg></span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Our partners ===== -->
+  <section class="partners" id="partners" data-view="partners">
+    <div class="row">
+      <h2 class="h2">Our<br>Partners</h2>
+      <div class="logos" aria-label="Our partners">
+        <span class="logo logo--digiseq">Digiseq</span>
+        <span class="logo logo--usc">universal<small>smart cards</small></span>
+        <span class="logo logo--mc" aria-label="Mastercard"><i></i><i></i></span>
+        <span class="logo logo--visa">VISA</span>
+        <span class="logo logo--infineon">infineon</span>
+        <span class="logo logo--nxp">NXP</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Discover the ring: the ring turns towards each feature ===== -->
+  <section class="explorer" id="explorer" data-view="explorer">
+    <div class="panel">
+      <h2>Discover the ring.</h2>
+      <p class="lede">Select a feature to see it up close.</p>
+      <div class="arrows" aria-label="Browse features">
+        <button class="arrow" id="featPrev" type="button" aria-label="Previous feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="arrow" id="featNext" type="button" aria-label="Next feature">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <ul class="features" id="features"></ul>
+    </div>
+  </section>
+
+  <!-- ===== How it works ===== -->
+  <section class="how" id="how" data-view="how">
+    <div class="head">
+      <h2 class="h2">How it works.</h2>
+      <p class="lede">Three steps, and never a card to take out again.</p>
+    </div>
+    <ol class="steps">
+      <li class="step">
+        <span class="num">01</span>
+        <h3>Choose your size</h3>
+        <p>Order your ring, or receive our free ring sizer first to find the perfect fit.</p>
+      </li>
+      <li class="step">
+        <span class="num">02</span>
+        <h3>Activate it in the app</h3>
+        <p>Link your card in two minutes from the Curio app. Your data stays encrypted, in the chip, nowhere else.</p>
+      </li>
+      <li class="step">
+        <span class="num">03</span>
+        <h3>Pay with a gesture</h3>
+        <p>Bring your hand close to the terminal. Wherever contactless is accepted, your ring works.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ===== From your idea to implementation ===== -->
+  <section class="idea" id="idea" data-view="idea">
+    <div class="head">
+      <h2 class="h2">From Your Idea To Implementation Of Every Aspect.</h2>
+      <p class="lede">Integrating wearable products into your portfolio has never been easier.</p>
+    </div>
+    <div class="cards">
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/><path d="M7 8h6M7 11h4"/></svg></span>
+        <h3>Payment-Enabled Wearables</h3>
+        <p>Integrating payment-certified secure element, these wearables enable contactless payments with a simple tap. Compatible with any terminal in the world, wearables bring payments to new levels of convenience.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 15a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.5 3.5 0 0 1 17 15H7z"/><path d="M12 15v5M9 20h6"/></svg></span>
+        <h3>Specialized Wearables</h3>
+        <p>Your imagination and needs is the only limit - from fitness rings to healthcare and emergency contactless bracelets, to branded event wearables to augment guest experience.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg></span>
+        <h3>Fan ID</h3>
+        <p>Fan ID is the secure way to manage visitor identification and access, preventing ticket fraud and ensuring only verified guests attendance. Fan ID can also implement transit, hotel access and customised user experience.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3v1a3 3 0 0 0-2 3 3 3 0 0 0 2 3v1a3 3 0 0 0 3 3h3V4H9z"/><path d="M15 4a3 3 0 0 1 3 3v1a3 3 0 0 1 2 3 3 3 0 0 1-2 3v1a3 3 0 0 1-3 3h-3V4h3z"/></svg></span>
+        <h3>Consulting</h3>
+        <p>Expert advice to align your technology strategy with your business goals and boost overall efficiency.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 5.5a3.5 3.5 0 0 0 4 4L8 20l-4-4L14.5 5.5z"/><path d="M15 13l4 4"/></svg></span>
+        <h3>Wearable Apps</h3>
+        <p>We assist building your own mobile apps that integrate with wearables - from simple whitelabel apps to SDKs for mobile platforms for seamless customer journey.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6"/><path d="M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg></span>
+        <h3>Event Management</h3>
+        <p>Reliable and flexible event management solution integrating conventional and wearable based-features - VIP tracking and management, personalised content delivery via PromoReady, vouchers and cloakroom and others.</p>
+      </article>
+    </div>
+    <a class="btn" href="#contact">Learn More</a>
+  </section>
+
+  <!-- ===== Closer look ===== -->
+  <section class="closer" id="closer" data-view="closer">
+    <h2>Take a closer look.</h2>
+    <span class="hint" id="dragHint">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0Z"/><path d="M2 12h3m14 0h3M12 2v3m0 14v3"/></svg>
+      Spin it with your finger or your mouse
+    </span>
+    <div class="spacer"></div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="cols">
+    <div>
+      <div class="fm">Curio✦</div>
+      <p>The payment ring by CurioLab. Modelled procedurally and rendered in real time in your browser.</p>
+    </div>
+    <div>
+      <h4>Address</h4>
+      <p>ALDEN TECHNOLOGY FZCO<br>Building A1, Dubai Silicon Oasis, Dubai, UAE</p>
+    </div>
+    <div>
+      <h4>Email</h4>
+      <p><a href="mailto:hello@curiolab.me">hello@curiolab.me</a></p>
+    </div>
+  </div>
+  <div class="legal">
+    <span>© <span id="year"></span> Alden Limited. All rights reserved.</span>
+    <span>curiolab.me</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('year').textContent = String(new Date().getFullYear());
+
+  /* ============================================================
+     EXPLORER CONTENT — edit freely
+     ============================================================ */
+  var ENGRAVING = 'Curio✦';
+
+  var FINISHES = [
+    { id:'black',    label:'black ceramic',   band:0x1b1b1d, polish:0x0c0c0e, engraving:0x8a8a92, swatch:'#141416' },
+    { id:'titanium', label:'brushed titanium', band:0x8f9298, polish:0xc9ccd1, engraving:0x2a2a2e, swatch:'#b9bcc2' },
+    { id:'rose',     label:'rose gold',       band:0xc9977f, polish:0xe6bda8, engraving:0x4a2e24, swatch:'#dcae98' },
+    { id:'night',    label:'midnight blue',   band:0x1e2b4d, polish:0x0f1730, engraving:0xb9c4e6, swatch:'#1b2745' }
+  ];
+  var SIZES = ['6','7','8','9','10','11','12','13'];
+
+  /* Each feature: title, text, and the ring view.
+     view : z = camera distance, rx = tilt (π/2 = face on), ry = turn, rz = roll,
+            fx/fy = offset in the frame. spin = absolute angle (freezes the slow turn),
+            nfc = contactless waves, kind = 'colors' | 'sizes'.                        */
+  var FEATURES = [
+    { id:'finishes', title:'Finishes', kind:'colors',
+      text:'Four finishes, one silhouette. Shown here in',
+      view:{ z:6.4, rx:1.10, ry:0.55, rz:0.12 } },
+    { id:'ceramic', title:'Brushed ceramic',
+      text:'The central band is satin-finished by micro-abrasion. It keeps neither fingerprints nor scratches: 9 Mohs hardness, close to sapphire.',
+      view:{ z:3.1, rx:0.25, ry:0.4, rz:0.06 } },
+    { id:'bevels', title:'Mirror-polished bevels',
+      text:'Two 30° chamfers frame the matte band. Polished at the end of firing, they catch the light in one continuous line.',
+      view:{ z:3.8, rx:1.95, ry:-0.6, rz:-0.3 } },
+    { id:'engraving', title:'Inner engraving',
+      text:'The name is laser-engraved under the polished inner surface. It will never fade. Personalise it with your initials when you order.',
+      view:{ z:4.8, rx:1.18, ry:0, rz:0, fx:0.02, fy:-0.42 }, spin:-0.3 },
+    { id:'payment', title:'Contactless payment', nfc:true,
+      text:'A passive NFC antenna inside the band. Bring your hand to the terminal: the payment is confirmed in under a second, wherever contactless is accepted.',
+      view:{ z:5.8, rx:1.25, ry:0.3, rz:0 } },
+    { id:'battery', title:'No battery',
+      text:'The ring is powered by the terminal at the moment of payment. No charging, no cable, no failure. It works for life.',
+      view:{ z:5.6, rx:0.62, ry:-0.7, rz:-0.1 } },
+    { id:'sizes', title:'Eight sizes', kind:'sizes',
+      text:'From size 6 to size 13. Not sure of yours? We send you a free ring sizer before shipping.',
+      view:{ z:5.8, rx:Math.PI/2, ry:0, rz:0 } }
+  ];
+
+  /* ---------- Renderer ---------- */
+  var stage = document.getElementById('stage');
+  var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  stage.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  // Background of the 3D scene = the CSS --bg variable, so the colour is set in one place
+  var bgCss = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#050506';
+  scene.background = new THREE.Color(bgCss);
+
+  var FOV = 34;
+  var camera = new THREE.PerspectiveCamera(FOV, window.innerWidth/window.innerHeight, 0.1, 100);
+
+  /* ---------- Studio environment (procedural equirectangular) ---------- */
+  function studioEnv(){
+    var c = document.createElement('canvas');
+    c.width = 1024; c.height = 512;
+    var x = c.getContext('2d');
+    var g = x.createLinearGradient(0,0,0,512);
+    g.addColorStop(0,'#1c1d22'); g.addColorStop(.55,'#0a0a0c'); g.addColorStop(1,'#020203');
+    x.fillStyle = g; x.fillRect(0,0,1024,512);
+    function softbox(cx, cy, w, h, bright, rot){
+      x.save(); x.translate(cx, cy); x.rotate(rot||0);
+      var gg = x.createRadialGradient(0,0,2, 0,0, Math.max(w,h));
+      gg.addColorStop(0, 'rgba(255,255,255,'+bright+')');
+      gg.addColorStop(.6, 'rgba(240,242,248,'+bright*0.35+')');
+      gg.addColorStop(1, 'rgba(240,242,248,0)');
+      x.fillStyle = gg;
+      x.scale(w/Math.max(w,h), h/Math.max(w,h));
+      x.beginPath(); x.arc(0,0,Math.max(w,h),0,Math.PI*2); x.fill();
+      x.restore();
+    }
+    softbox(260, 120, 300, 70, .95, -0.08);   // main top softbox
+    softbox(790, 150, 220, 55, .75, 0.1);     // second softbox
+    softbox(520, 330, 420, 40, .28, 0);       // low strip, fill
+    softbox(60, 240, 60, 160, .35, 0);        // side kick
+    var tex = new THREE.CanvasTexture(c);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    var pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    var env = pmrem.fromEquirectangular(tex).texture;
+    tex.dispose(); pmrem.dispose();
+    return env;
+  }
+  scene.environment = studioEnv();
+
+  var key = new THREE.DirectionalLight(0xffffff, .7);
+  key.position.set(2.5, 3, 2);
+  scene.add(key);
+  var fill = new THREE.DirectionalLight(0xe8ecf5, .45);
+  fill.position.set(-3, -1, 3);
+  scene.add(fill);
+  scene.add(new THREE.AmbientLight(0xffffff, .9));
+
+  /* ---------- Textures ---------- */
+  function brushedRoughness(){
+    var c = document.createElement('canvas');
+    c.width = 512; c.height = 128;
+    var x = c.getContext('2d');
+    x.fillStyle = '#b4b4b4'; x.fillRect(0,0,512,128);  // base roughness ~0.7
+    for (var i=0;i<900;i++){
+      var y = Math.random()*128;
+      var v = 150 + Math.random()*90|0;
+      x.strokeStyle = 'rgba('+v+','+v+','+v+',0.5)';
+      x.lineWidth = Math.random()*1.2;
+      x.beginPath();
+      x.moveTo(0, y);
+      x.lineTo(512, y + (Math.random()-0.5)*2);
+      x.stroke();
+    }
+    var t = new THREE.CanvasTexture(c);
+    t.wrapS = THREE.RepeatWrapping;
+    t.repeat.set(3,1);
+    return t;
+  }
+  function engravingMap(){
+    // White text on a transparent background: the colour comes from the material (per finish)
+    var c = document.createElement('canvas');
+    c.width = 2048; c.height = 256;
+    var x = c.getContext('2d');
+    x.clearRect(0,0,2048,256);
+    x.fillStyle = '#ffffff';
+    x.font = '500 118px "Cormorant Garamond", serif';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.save(); x.translate(1024,132); x.scale(-1,1);   // mirrored: readable from the inside
+    x.fillText(ENGRAVING, 0, 0);
+    x.restore();
+    var t = new THREE.CanvasTexture(c);
+    t.wrapS = THREE.RepeatWrapping;
+    t.encoding = THREE.sRGBEncoding;
+    return t;
+  }
+
+  /* ---------- Ring geometry (same dimensions as the .glb) ---------- */
+  var RI=8.75, RO=10.75, RL=10.35, ZB=2.55, ZL=3.65, H=4.0, S=0.1; // 1 unit = 1 cm
+  function lathe(points, mat, segs){
+    var pts = points.map(function(p){ return new THREE.Vector2(p[0]*S, p[1]*S); });
+    var g = new THREE.LatheGeometry(pts, segs||220);
+    var m = new THREE.Mesh(g, mat);
+    return m;
+  }
+  var matBrushed = new THREE.MeshStandardMaterial({
+    color:0x1b1b1d, metalness:1, roughness:.72,
+    roughnessMap:brushedRoughness(), envMapIntensity:1.0
+  });
+  var matPolished = new THREE.MeshStandardMaterial({
+    color:0x0c0c0e, metalness:1, roughness:.09, envMapIntensity:1.35
+  });
+  var matInner = new THREE.MeshStandardMaterial({
+    color:0x0c0c0e, metalness:1, roughness:.16, side:THREE.BackSide, envMapIntensity:1.1
+  });
+  var matEngraving = new THREE.MeshStandardMaterial({
+    color:0x8a8a92, map:engravingMap(), transparent:true, depthWrite:false,
+    metalness:.4, roughness:.5, side:THREE.BackSide, envMapIntensity:.8
+  });
+
+  var ring = new THREE.Group();
+  ring.add(lathe([[RO,-ZB],[RO,ZB]], matBrushed));                      // central band
+  ring.add(lathe([[RI,-H],[RL,-H],[RL,-ZL],[RO,-ZB]], matPolished));    // bevel + left edge
+  ring.add(lathe([[RO,ZB],[RL,ZL],[RL,H],[RI,H]], matPolished));        // bevel + right edge
+  ring.add(lathe([[RI,-H],[RI,H]], matInner, 220));                     // polished inside
+  var engraving = new THREE.Mesh(
+    new THREE.CylinderGeometry(RI*S-0.004, RI*S-0.004, H*S*1.5, 220, 1, true), matEngraving); // engraving
+  ring.add(engraving);
+
+  // NFC waves (only visible on the "payment" feature)
+  var waves = [];
+  for (var w=0; w<3; w++){
+    var wm = new THREE.Mesh(
+      new THREE.TorusGeometry(1, 0.009, 8, 160),
+      new THREE.MeshBasicMaterial({ color:0x2f6fd6, transparent:true, opacity:0, toneMapped:false, side:THREE.DoubleSide }));
+    wm.rotation.x = Math.PI/2;
+    wm.visible = false;
+    ring.add(wm); waves.push(wm);
+  }
+
+  // the ring is generated around Y; we stand it up (horizontal axis)
+  ring.rotation.order = 'YXZ';
+  scene.add(ring);
+
+  function applyFinish(f){
+    matBrushed.color.setHex(f.band);
+    matPolished.color.setHex(f.polish);
+    matInner.color.setHex(f.polish);
+    matEngraving.color.setHex(f.engraving);
+  }
+
+  /* ---------- Scroll choreography (Apple style) ---------- */
+  // A "view" = camera framing + ring orientation, tied to each section.
+  //   z = camera distance, y = camera height, rx/ry/rz = orientation,
+  //   fx/fy = ring offset as a fraction of the half-screen (to make room for text)
+  var VIEWS = {
+    hero:     { z:6.6, y:0.05, rx:1.35, ry:0.55, rz:0.10, fy:-0.42 },     // hero: ring below the wordmark (light theme)
+    why:      { z:7.5, y:0.0,  rx:1.05, ry:2.10, rz:0.25, fx:-0.5, fy:-1.0 },  // peeks in below the intro text, left
+    partners: { z:8.5, y:0.0,  rx:1.30, ry:3.60, rz:0.0,  fx:0,     fy:-1.35 }, // slips out of frame
+    explorer: null,                                                       // driven by the selected feature
+    how:      { z:7.5, y:0.0,  rx:1.40, ry:8.20, rz:0.0,  fy:-0.95 },      // fades under the steps
+    idea:     { z:8.5, y:0.0,  rx:1.30, ry:9.40, rz:0.0,  fy:-1.4 },       // out of frame behind the cards
+    closer:   { z:5.6, y:0.0,  rx:1.20, ry:10.6, rz:0.0  }                 // closer look (drag starting point)
+  };
+  function smooth(t){ return t*t*(3-2*t); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+
+  var explorerView = { z:6.4, y:0, rx:1.1, ry:0.55, rz:0.12, fx:0, fy:0 };
+  var explorerSpin = null;      // absolute angle requested (engraving) or null
+  var explorerActive = 0;       // 0..1: weight of the explorer view in the current blend
+
+  function explorerTarget(){
+    // On wide screens the ring moves right of the panel; on mobile it goes above it.
+    var aspect = window.innerWidth/window.innerHeight;
+    var narrow = window.innerWidth <= 680;
+    var v = explorerView;
+    var zoom = narrow ? 1.45/aspect : Math.max(1, 1.15/aspect); // portrait: pull back, ring above the panel
+    return {
+      z: v.z*zoom, y: 0, rx: v.rx, ry: v.ry, rz: v.rz,
+      fx: narrow ? 0 : 0.5 + (v.fx||0),
+      fy: narrow ? 0.62 + (v.fy||0)*0.3 : (v.fy||0)
+    };
+  }
+
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main > section'));
+  function viewOf(section){
+    var k = section.getAttribute('data-view') || section.id;
+    if (k === 'explorer') return explorerTarget();
+    var v = VIEWS[k] || VIEWS.hero;
+    if (k === 'hero' && window.innerWidth <= 680) return { z:9.2, y:v.y, rx:v.rx, ry:v.ry, rz:v.rz, fx:0, fy:-0.32 };
+    if (k === 'why' && window.innerWidth <= 1000) return { z:v.z, y:v.y, rx:v.rx, ry:v.ry, rz:v.rz, fx:0, fy:-1.3 };
+    return v;
+  }
+  function scrollTargets(){
+    // Interpolate between the views of the two sections bracketing the screen centre.
+    var vh = window.innerHeight, mid = vh*0.5;
+    var prev = null, next = null, prevD = -Infinity, nextD = Infinity;
+    for (var i=0;i<sections.length;i++){
+      var r = sections[i].getBoundingClientRect();
+      var d = r.top + r.height*0.5 - mid;   // <0: section already passed
+      if (d <= 0 && d > prevD){ prevD = d; prev = sections[i]; }
+      if (d > 0 && d < nextD){ nextD = d; next = sections[i]; }
+    }
+    if (!prev){ prev = next; prevD = nextD; }
+    if (!next){ next = prev; nextD = prevD; }
+    var t = (next === prev) ? 0 : smooth(-prevD/(nextD-prevD));
+    var a = viewOf(prev), b = viewOf(next);
+    var wa = prev.id === 'explorer' ? 1-t : 0, wb = next.id === 'explorer' ? t : 0;
+    explorerActive = wa + wb;
+    return {
+      z: lerp(a.z,b.z,t), y: lerp(a.y||0,b.y||0,t),
+      rx: lerp(a.rx,b.rx,t), ry: lerp(a.ry,b.ry,t), rz: lerp(a.rz,b.rz,t),
+      fx: lerp(a.fx||0,b.fx||0,t), fy: lerp(a.fy||0,b.fy||0,t)
+    };
+  }
+
+  var cur = { z:VIEWS.hero.z, y:VIEWS.hero.y, rx:VIEWS.hero.rx, ry:VIEWS.hero.ry, rz:VIEWS.hero.rz, fx:0, fy:0 };
+  var dragX = 0, dragY = 0, dragVX = 0;
+  var idle = 0;
+
+  /* ---------- "Closer look" + explorer interaction ---------- */
+  var closer = document.getElementById('closer');
+  var explorerEl = document.getElementById('explorer');
+  var dragging = false, px=0, py=0, dragUsed=false;
+  function nearCenter(el){
+    var r = el.getBoundingClientRect();
+    return r.top < window.innerHeight*0.5 && r.bottom > window.innerHeight*0.5;
+  }
+  function canDrag(e){
+    if (e.target && e.target.closest && e.target.closest('.panel, .hint, footer, a, button')) return false;
+    return nearCenter(closer) || nearCenter(explorerEl);
+  }
+  function onDown(e){
+    if (!canDrag(e)) return;
+    dragging = true; dragUsed = true;
+    stage.classList.add('grabbing');
+    px = (e.touches?e.touches[0].clientX:e.clientX);
+    py = (e.touches?e.touches[0].clientY:e.clientY);
+  }
+  function onMove(e){
+    if (!dragging) return;
+    var cx = (e.touches?e.touches[0].clientX:e.clientX);
+    var cy = (e.touches?e.touches[0].clientY:e.clientY);
+    dragVX = (cx-px)*0.008;
+    dragX += dragVX;
+    dragY = Math.max(-1.2, Math.min(1.2, dragY + (cy-py)*0.006));
+    px = cx; py = cy;
+    if (e.cancelable && e.touches) e.preventDefault();
+  }
+  function onUp(){ dragging = false; stage.classList.remove('grabbing'); }
+  window.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchstart', onDown, {passive:true});
+  window.addEventListener('touchmove', onMove, {passive:false});
+  window.addEventListener('touchend', onUp);
+
+  /* ---------- Explorer: feature list ---------- */
+  var nfcTarget = 0;
+  (function buildExplorer(){
+    var list = document.getElementById('features');
+    var prevBtn = document.getElementById('featPrev');
+    var nextBtn = document.getElementById('featNext');
+    var active = -1;
+    var finish = FINISHES[0];
+    var size = '9';
+    var items = [];
+
+    function renderCard(card, f, btn){
+      if (f.kind === 'colors'){
+        card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+' <span class="finish-name">'+finish.label+'</span>.</p>'+
+                         '<div class="swatches" role="group" aria-label="Choose a finish"></div>';
+        var sw = card.querySelector('.swatches');
+        FINISHES.forEach(function(fin){
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'swatch';
+          b.style.background = 'radial-gradient(circle at 35% 30%, rgba(255,255,255,.35), transparent 45%), '+fin.swatch;
+          b.setAttribute('aria-label', fin.label);
+          b.setAttribute('aria-pressed', String(fin.id === finish.id));
+          b.addEventListener('click', function(){
+            finish = fin; applyFinish(fin);
+            sw.querySelectorAll('.swatch').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+            card.querySelector('.finish-name').textContent = fin.label;
+            btn.querySelector('.feature__swatch').style.background = fin.swatch;
+          });
+          sw.appendChild(b);
+        });
+      } else if (f.kind === 'sizes'){
+        card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+'</p><div class="sizes" role="group" aria-label="Choose a size"></div>';
+        var wrap = card.querySelector('.sizes');
+        SIZES.forEach(function(s){
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'size'; b.textContent = s;
+          b.setAttribute('aria-pressed', String(s === size));
+          b.addEventListener('click', function(){
+            size = s;
+            wrap.querySelectorAll('.size').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+          });
+          wrap.appendChild(b);
+        });
+      } else {
+        card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+'</p>';
+      }
+    }
+
+    FEATURES.forEach(function(f, i){
+      var li = document.createElement('li');
+      li.className = 'feature';
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'feature__btn';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.innerHTML = (f.kind === 'colors')
+        ? '<span class="feature__swatch" style="background:'+finish.swatch+'"></span><span>'+f.title+'</span>'
+        : '<span class="feature__plus" aria-hidden="true"></span><span>'+f.title+'</span>';
+      btn.addEventListener('click', function(){ select(i); });
+      var card = document.createElement('div');
+      card.className = 'feature__card';
+      card.setAttribute('role', 'region');
+      card.setAttribute('aria-label', f.title);
+      renderCard(card, f, btn);
+      li.appendChild(btn); li.appendChild(card);
+      list.appendChild(li);
+      items.push({ li:li, btn:btn });
+    });
+
+    function select(i){
+      if (i === active) return;
+      active = i;
+      items.forEach(function(it, j){
+        it.li.classList.toggle('is-active', j === i);
+        it.btn.setAttribute('aria-expanded', String(j === i));
+      });
+      var f = FEATURES[i];
+      explorerView = {
+        z:f.view.z, y:0, rx:f.view.rx, ry:f.view.ry, rz:f.view.rz,
+        fx:f.view.fx||0, fy:f.view.fy||0
+      };
+      explorerSpin = (f.spin != null) ? f.spin : null;
+      nfcTarget = f.nfc ? 1 : 0;
+      prevBtn.disabled = i <= 0;
+      nextBtn.disabled = i >= FEATURES.length-1;
+    }
+    prevBtn.addEventListener('click', function(){ select(Math.max(0, active-1)); });
+    nextBtn.addEventListener('click', function(){ select(Math.min(FEATURES.length-1, active+1)); });
+    list.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowDown'){ e.preventDefault(); select(Math.min(FEATURES.length-1, active+1)); }
+      if (e.key === 'ArrowUp'){ e.preventDefault(); select(Math.max(0, active-1)); }
+    });
+    select(0);
+  })();
+
+  /* ---------- Text reveal ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting) en.target.classList.add('inview');
+    });
+  }, { threshold: 0.15 });
+  sections.forEach(function(s){ io.observe(s); });
+
+  /* ---------- Loop ---------- */
+  var nfcLevel = 0, clock = 0;
+  function frame(){
+    clock += 1/60;
+    var tgt = scrollTargets();
+    var ease = reduceMotion ? 1 : 0.075;
+
+    // Engraving: freeze the slow turn and aim for an absolute angle, by the shortest path.
+    var spinLock = explorerSpin != null && explorerActive > 0.5;
+    var tgtRy = tgt.ry;
+    if (spinLock){
+      var want = explorerSpin - idle - dragX;
+      var d = (want - cur.ry) % (Math.PI*2);
+      if (d > Math.PI) d -= Math.PI*2; if (d < -Math.PI) d += Math.PI*2;
+      tgtRy = cur.ry + d;
+    }
+
+    cur.z += (tgt.z - cur.z)*ease;
+    cur.y += (tgt.y - cur.y)*ease;
+    cur.rx += (tgt.rx - cur.rx)*ease;
+    cur.ry += (tgtRy - cur.ry)*ease;
+    cur.rz += (tgt.rz - cur.rz)*ease;
+    cur.fx += (tgt.fx - cur.fx)*ease;
+    cur.fy += (tgt.fy - cur.fy)*ease;
+
+    if (!dragging){
+      dragVX *= 0.95;               // inertia
+      dragX += dragVX;
+      dragY *= 0.97;                // gentle return to flat
+    }
+    if (!reduceMotion && !spinLock) idle += 0.0016;   // constant breathing
+
+    // Ring offset in the frame (fraction of the visible half-screen at this distance)
+    var halfH = cur.z * Math.tan(FOV*Math.PI/360);
+    var halfW = halfH * camera.aspect;
+    ring.position.set(cur.fx*halfW, cur.fy*halfH, 0);
+
+    camera.position.set(0, cur.y, cur.z);
+    camera.lookAt(0, 0, 0);
+    ring.rotation.y = cur.ry + idle + dragX;
+    ring.rotation.x = cur.rx + dragY;
+    ring.rotation.z = cur.rz;
+
+    // NFC waves
+    var nfcWant = explorerActive > 0.05 ? nfcTarget * explorerActive : 0;
+    if (explorerActive <= 0.05) nfcLevel = 0;
+    nfcLevel += (nfcWant - nfcLevel) * 0.06;
+    for (var i=0;i<waves.length;i++){
+      var wv = waves[i];
+      if (nfcLevel > 0.005){
+        var ph = (clock*0.5 + i/3) % 1;
+        var s = (RI*S) * (0.3 + ph*0.62);
+        wv.scale.set(s, s, s);
+        wv.material.opacity = nfcLevel * (1-ph) * 0.9;
+        wv.visible = true;
+      } else {
+        wv.visible = false;
+      }
+    }
+
+    stage.classList.toggle('grab', explorerActive > 0.5 || nearCenter(closer));
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  frame();
+
+  window.addEventListener('resize', function(){
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
+</body>
+</html>

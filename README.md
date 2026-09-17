@@ -3,8 +3,12 @@
 Homepage "experience" for the **Curio** payment ring by CurioLab: a procedurally modelled ring
 (Three.js) stays fixed in the background and turns as you scroll, Apple product-page style.
 
-Everything lives in one file, `index.html` (HTML + CSS + JS). Three.js r128 is loaded from cdnjs.
-The page is in English.
+Two self-contained files (HTML + CSS + JS), Three.js r128 loaded from cdnjs, page in English:
+
+- `index.html` — dark version (black background).
+- `index-light.html` — light version (white background), same content and behaviour with the whole
+  palette adjusted: dark text, white cards with a soft shadow, darker partner logos and NFC waves,
+  brighter lighting on the ring, and the hero ring placed below the wordmark instead of behind it.
 
 ## Sections
 
@@ -39,6 +43,9 @@ At the top of the script in `index.html`:
 - `FEATURES` — explorer features, each with its ring view
   (`z` camera distance, `rx` tilt, `ry` turn, `rz` roll, `fx`/`fy` offset in the frame, `spin` frozen angle, `nfc` waves).
 - `VIEWS` — ring framing for every other section (hero, why, partners, how, idea, closer).
+
+The background colour of each file is set once, at the top of `:root` (`--bg` and `--bg-rgb`, same colour
+as hex and as r,g,b).
 
 Section copy is directly in the HTML.
 
