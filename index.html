@@ -119,6 +119,14 @@
   }
   .icon svg{ width:24px; height:24px; stroke:#0b1d3a; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
 
+  .textlink{
+    display:inline-block; margin-top:10px;
+    color:var(--blue); font-size:14.5px;
+    text-decoration:underline; text-underline-offset:3px;
+    transition:opacity .2s ease;
+  }
+  .textlink:hover{ opacity:.8; }
+
   /* ---------- Hero ---------- */
   .hero{
     flex-direction:column;
@@ -575,6 +583,7 @@
         <span class="num">01</span>
         <h3>Choose your size</h3>
         <p>Order your ring, or receive our free ring sizer first to find the perfect fit.</p>
+        <a class="textlink" href="size.html">Find your size on screen →</a>
       </li>
       <li class="step">
         <span class="num">02</span>
@@ -654,6 +663,8 @@
     <div>
       <h4>Email</h4>
       <p><a href="mailto:hello@curiolab.me">hello@curiolab.me</a></p>
+      <h4 style="margin-top:14px">Sizing</h4>
+      <p><a class="textlink" href="size.html">Find your ring size on screen →</a></p>
     </div>
   </div>
   <div class="legal">
@@ -994,7 +1005,8 @@
           sw.appendChild(b);
         });
       } else if (f.kind === 'sizes'){
-        card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+'</p><div class="sizes" role="group" aria-label="Choose a size"></div>';
+        card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+'</p><div class="sizes" role="group" aria-label="Choose a size"></div>'+
+                         '<p style="margin-top:14px"><a class="textlink" href="size.html">Find your size on screen →</a></p>';
         var wrap = card.querySelector('.sizes');
         SIZES.forEach(function(s){
           var b = document.createElement('button');

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Curio — Find your ring size</title>
+<meta name="description" content="Find your Curio ring size on screen: calibrate with a bank card, then compare a true-size circle with your finger or a ring you already wear.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Outfit:wght@300;400;500&display=swap">
+<style>
+  :root{
+    --bg:#ffffff;
+    --bg-rgb:255,255,255;
+    --bg-soft:#f5f5f7;
+    --ink:#1d1d1f;
+    --ink-dim:#6e6e73;
+    --hairline:rgba(29,29,31,.14);
+    --glass:rgba(29,29,31,.05);
+    --blue:#4a8dff;
+    --blue-2:#1f5fcc;
+    --blue-ink:#1f5fcc;
+    --card-line:rgba(31,95,204,.28);
+    --ok:#1f9d61;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Outfit',system-ui,sans-serif; font-weight:300;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+  a{ color:inherit; text-decoration:none; }
+  input{ font:inherit; }
+
+  /* ---------- Top bar ---------- */
+  .top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px clamp(20px, 5vw, 48px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .wordmark{
+    font-family:'Cormorant Garamond',serif; font-weight:500; font-size:28px; line-height:1;
+    letter-spacing:.02em;
+  }
+  .wordmark .star{ font-size:.42em; vertical-align:.9em; color:#8a8a92; margin-left:.05em; }
+  .top a.back{ font-size:14px; color:var(--ink-dim); display:inline-flex; align-items:center; gap:6px; }
+  .top a.back:hover{ color:var(--ink); }
+
+  /* ---------- Layout ---------- */
+  main{ flex:1; width:100%; max-width:760px; margin:0 auto; padding:40px clamp(16px, 5vw, 40px) 80px; }
+  h1{
+    font-family:'Cormorant Garamond',serif; font-weight:500;
+    font-size:clamp(36px, 6vw, 56px); line-height:1.08; letter-spacing:-.01em;
+    text-align:center;
+  }
+  .lede{ color:var(--ink-dim); font-size:clamp(16px, 1.8vw, 18px); line-height:1.6; text-align:center; max-width:36em; margin:14px auto 0; }
+
+  /* Steps indicator */
+  .stepper{
+    display:flex; justify-content:center; gap:8px; margin:34px auto 30px;
+    list-style:none; flex-wrap:wrap;
+  }
+  .stepper li{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13.5px; color:var(--ink-dim);
+    padding:7px 14px 7px 8px; border-radius:999px; border:1px solid var(--hairline);
+    transition:all .3s ease;
+  }
+  .stepper li i{
+    width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+    font-style:normal; font-size:12px; font-weight:500;
+    border:1px solid var(--hairline); color:var(--ink-dim);
+  }
+  .stepper li.is-current{ color:var(--ink); border-color:var(--ink); }
+  .stepper li.is-current i{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .stepper li.is-done{ color:var(--ok); border-color:rgba(31,157,97,.35); }
+  .stepper li.is-done i{ background:var(--ok); color:#fff; border-color:var(--ok); }
+
+  /* Panels */
+  .panel{ display:none; animation:fadeIn .45s ease; }
+  .panel.is-active{ display:block; }
+  @keyframes fadeIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+  .card{
+    border:1px solid var(--hairline); border-radius:22px; background:#fff;
+    box-shadow:0 10px 40px rgba(29,29,31,.06);
+    padding:clamp(20px, 4vw, 32px);
+  }
+  .card + .card{ margin-top:16px; }
+  h2{ font-family:'Cormorant Garamond',serif; font-weight:500; font-size:clamp(26px, 3.4vw, 34px); line-height:1.15; margin-bottom:8px; }
+  .hint{ color:var(--ink-dim); font-size:15px; line-height:1.6; }
+  .hint b{ color:var(--ink); font-weight:400; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 26px; border-radius:10px;
+    background:linear-gradient(135deg, var(--blue), var(--blue-2));
+    color:#fff; font-weight:400; font-size:15.5px;
+    box-shadow:0 8px 26px rgba(31,95,204,.22);
+    transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn:disabled{ opacity:.45; cursor:default; transform:none; }
+  .btn--ghost{ background:#fff; color:var(--ink); border:1px solid var(--hairline); box-shadow:none; }
+  .btn--ghost:hover{ background:var(--bg-soft); }
+  .actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; align-items:center; }
+  .actions .spacer{ flex:1; }
+  .link{ color:var(--blue-ink); font-size:14.5px; cursor:pointer; background:none; border:0; text-decoration:underline; text-underline-offset:3px; }
+
+  /* ---------- Step 1: calibration ---------- */
+  .stage{
+    margin-top:22px; padding:28px 16px; border-radius:18px;
+    background:var(--bg-soft);
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+    overflow:hidden;
+  }
+  .cardShape{
+    position:relative;
+    border:2px dashed var(--blue-ink);
+    border-radius:calc(var(--mm) * 3.18); /* real card corner radius ≈ 3.18 mm */
+    background:rgba(74,141,255,.06);
+    display:grid; place-items:center;
+    color:var(--blue-ink); font-size:13.5px; text-align:center; padding:8px;
+    transition:width .05s linear, height .05s linear;
+  }
+  .cardShape .chip{
+    position:absolute; left:11%; top:22%;
+    width:14%; height:16%; border-radius:12%;
+    border:1.5px solid rgba(31,95,204,.5);
+  }
+  .cardShape[data-portrait="true"] .chip{ left:22%; top:11%; width:16%; height:10%; }
+  .cardShape span{ max-width:14em; line-height:1.4; }
+  .slider{ width:min(100%, 420px); display:flex; align-items:center; gap:12px; }
+  .slider input[type=range]{ flex:1; accent-color:var(--blue-2); height:28px; }
+  .stepBtn{
+    width:38px; height:38px; border-radius:50%; border:1px solid var(--hairline); background:#fff;
+    font-size:20px; line-height:1; display:grid; place-items:center; color:var(--ink);
+  }
+  .stepBtn:hover{ background:var(--bg-soft); }
+  .readout{ font-size:13.5px; color:var(--ink-dim); text-align:center; }
+  .readout b{ color:var(--ink); font-weight:400; }
+
+  /* ---------- Step 2: compare ---------- */
+  .sizes{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:18px; }
+  .size{
+    border:1px solid var(--hairline); border-radius:12px; padding:10px 6px; background:#fff;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    transition:border-color .2s ease, background .2s ease, color .2s ease;
+  }
+  .size strong{ font-weight:500; font-size:16px; }
+  .size small{ font-size:12px; color:var(--ink-dim); }
+  .size:hover{ background:var(--bg-soft); }
+  .size[aria-pressed="true"]{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .size[aria-pressed="true"] small{ color:rgba(255,255,255,.7); }
+
+  .ringStage{
+    margin-top:22px; border-radius:18px; background:var(--bg-soft);
+    padding:24px 16px; display:flex; flex-direction:column; align-items:center; gap:14px;
+  }
+  .ringStage svg{ display:block; overflow:visible; }
+  .ringNav{ display:flex; align-items:center; gap:14px; }
+  .ringNav .value{ min-width:12em; text-align:center; font-size:15px; }
+  .ringNav .value b{ font-weight:500; }
+  .compareTip{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;
+  }
+  .tip{
+    border:1px solid var(--hairline); border-radius:14px; padding:14px 16px;
+    font-size:14px; line-height:1.5; color:var(--ink-dim);
+  }
+  .tip b{ display:block; color:var(--ink); font-weight:400; margin-bottom:4px; }
+  .tip svg{ width:22px; height:22px; stroke:var(--blue-ink); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; margin-bottom:8px; }
+
+  details{ margin-top:16px; border-top:1px solid var(--hairline); padding-top:14px; }
+  summary{ cursor:pointer; font-size:14.5px; color:var(--blue-ink); list-style:none; display:inline-flex; align-items:center; gap:6px; }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{ content:"+"; width:18px; height:18px; border-radius:50%; border:1px solid currentColor; display:grid; place-items:center; font-size:13px; }
+  details[open] summary::before{ content:"–"; }
+  .paper{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+  .paper input[type=number]{
+    width:110px; padding:10px 12px; border:1px solid var(--hairline); border-radius:10px; font-size:15px;
+  }
+  .paper .out{ font-size:14.5px; color:var(--ink-dim); }
+  .paper .out b{ color:var(--ink); font-weight:400; }
+
+  /* ---------- Step 3: result ---------- */
+  .result{ text-align:center; padding:clamp(28px, 5vw, 44px) clamp(20px, 4vw, 32px); }
+  .result .big{ font-family:'Cormorant Garamond',serif; font-weight:500; font-size:clamp(56px, 12vw, 96px); line-height:1; margin:10px 0 4px; }
+  .result .sub{ color:var(--ink-dim); font-size:16px; }
+  .result .actions{ justify-content:center; margin-top:28px; }
+  .note{ font-size:13px; color:var(--ink-dim); margin-top:14px; line-height:1.5; }
+
+  .warn{
+    display:none; margin-top:14px; padding:12px 14px; border-radius:12px;
+    background:#fff7e6; color:#7a5200; font-size:14px; line-height:1.5;
+  }
+  .warn.is-on{ display:block; }
+
+  footer{
+    border-top:1px solid var(--hairline); padding:20px clamp(20px, 5vw, 48px);
+    font-size:13px; color:var(--ink-dim); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+
+  @media (max-width:560px){
+    .sizes{ grid-template-columns:repeat(4, 1fr); gap:8px; }
+    .size strong{ font-size:14.5px; }
+    .compareTip{ grid-template-columns:1fr; }
+    .stepper li span{ display:none; }
+    .stepper li.is-current span{ display:inline; }
+    .actions .btn{ width:100%; }
+    .actions .spacer{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="wordmark" href="index-light.html">Curio<span class="star">✦</span></a>
+  <a class="back" href="index-light.html">← Back to the ring</a>
+</header>
+
+<main>
+  <h1>Find your ring size.</h1>
+  <p class="lede">Two minutes, no tools. Calibrate your screen with a bank card, then compare a true-size circle with your finger or a ring you already wear.</p>
+
+  <ol class="stepper" aria-label="Steps">
+    <li id="st1" class="is-current"><i>1</i><span>Calibrate</span></li>
+    <li id="st2"><i>2</i><span>Compare</span></li>
+    <li id="st3"><i>3</i><span>Your size</span></li>
+  </ol>
+
+  <!-- ========== STEP 1 : CALIBRATE ========== -->
+  <section class="panel is-active" id="p1" aria-labelledby="h1a">
+    <div class="card">
+      <h2 id="h1a">Calibrate your screen</h2>
+      <p class="hint">Every screen shows millimetres differently. Place any <b>bank card</b> flat on the screen over the outline, then move the slider until the outline is <b>exactly the size of your card</b>.</p>
+
+      <div class="stage">
+        <div class="cardShape" id="cardShape" data-portrait="false" role="img" aria-label="Bank card outline to match with a real card">
+          <i class="chip" aria-hidden="true"></i>
+          <span>Lay your card here and match the outline</span>
+        </div>
+        <div class="slider">
+          <button class="stepBtn" id="calMinus" type="button" aria-label="Slightly smaller">−</button>
+          <input type="range" id="cal" min="2.4" max="7.5" step="0.01" value="3.78" aria-label="Screen scale">
+          <button class="stepBtn" id="calPlus" type="button" aria-label="Slightly larger">+</button>
+        </div>
+        <p class="readout">Outline: <b id="calReadout">85.6 × 54.0 mm</b> · use the buttons for fine tuning</p>
+      </div>
+
+      <div class="warn" id="zoomWarn">Your browser seems zoomed. Set the zoom to 100 % before calibrating for the most accurate result.</div>
+
+      <div class="actions">
+        <button class="link" id="skipCal" type="button">No card at hand? Continue with an estimate</button>
+        <span class="spacer"></span>
+        <button class="btn" id="toStep2" type="button">The outline matches my card →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STEP 2 : COMPARE ========== -->
+  <section class="panel" id="p2" aria-labelledby="h2a">
+    <div class="card">
+      <h2 id="h2a">Compare with your finger or a ring</h2>
+      <p class="hint">The circle below is shown at its <b>real size</b>. Pick a size, then check it against a ring you already wear on the same finger, or place your finger over it.</p>
+
+      <div class="ringStage">
+        <svg id="ringSvg" width="240" height="240" viewBox="0 0 240 240" aria-label="True-size ring circle">
+          <circle id="ringOuter" cx="120" cy="120" r="70" fill="rgba(29,29,31,.06)" stroke="rgba(29,29,31,.18)" stroke-width="1"/>
+          <circle id="ringInner" cx="120" cy="120" r="60" fill="#fff" stroke="var(--blue-ink)" stroke-width="1.6"/>
+          <text id="ringLabel" x="120" y="120" text-anchor="middle" dominant-baseline="central" font-family="Cormorant Garamond, serif" font-size="30" fill="#1d1d1f">9</text>
+        </svg>
+        <div class="ringNav">
+          <button class="stepBtn" id="sizeDown" type="button" aria-label="Smaller size">−</button>
+          <div class="value"><b id="sizeName">US 9</b> · inner diameter <span id="sizeMm">18.9</span> mm</div>
+          <button class="stepBtn" id="sizeUp" type="button" aria-label="Larger size">+</button>
+        </div>
+      </div>
+
+      <div class="sizes" id="sizes" role="group" aria-label="Choose a size"></div>
+
+      <div class="compareTip">
+        <div class="tip">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="4"/></svg>
+          <b>With a ring you own</b>
+          Lay it on the circle. The right size is when the <em>inside</em> edge of your ring sits exactly on the blue line.
+        </div>
+        <div class="tip">
+          <svg viewBox="0 0 24 24"><path d="M8 20V9a2 2 0 0 1 4 0v6"/><path d="M12 12V7a2 2 0 0 1 4 0v8"/><path d="M16 11V9a2 2 0 0 1 4 0v6a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6"/></svg>
+          <b>With your finger</b>
+          Place the finger over the circle. The circle should be just wider than the knuckle, so the ring can slide over it.
+        </div>
+      </div>
+
+      <details>
+        <summary>No ring to compare? Measure with a strip of paper</summary>
+        <p class="hint" style="margin-top:10px">Wrap a thin strip of paper around the base of your finger, mark where it overlaps, then measure the length in millimetres.</p>
+        <div class="paper">
+          <input type="number" id="circ" inputmode="decimal" min="40" max="80" step="0.5" placeholder="e.g. 58">
+          <span class="out">mm around the finger → <b id="circOut">enter a length</b></span>
+        </div>
+      </details>
+
+      <div class="actions">
+        <button class="btn btn--ghost" id="backTo1" type="button">← Recalibrate</button>
+        <span class="spacer"></span>
+        <button class="btn" id="toStep3" type="button">This is my size →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STEP 3 : RESULT ========== -->
+  <section class="panel" id="p3" aria-labelledby="h3a">
+    <div class="card result">
+      <p class="hint">Your Curio ring size</p>
+      <div class="big" id="resultSize">US 9</div>
+      <p class="sub">Inner diameter <span id="resultMm">18.9</span> mm · circumference <span id="resultCirc">59.4</span> mm</p>
+      <div class="actions">
+        <a class="btn" id="resultCta" href="index-light.html#contact">Continue with this size</a>
+        <a class="btn btn--ghost" href="mailto:hello@curiolab.me?subject=Free%20ring%20sizer">Order the free sizer kit</a>
+      </div>
+      <p class="note">Between two sizes? Choose the larger one for wide knuckles, the smaller one for slim fingers. Fingers are slightly bigger in the evening and in warm weather.</p>
+      <div class="actions" style="margin-top:18px">
+        <button class="link" id="backTo2" type="button">← Compare again</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>© <span id="year"></span> Alden Limited. All rights reserved.</span>
+  <a href="index-light.html">curiolab.me</a>
+</footer>
+
+<script>
+(function(){
+  document.getElementById('year').textContent = String(new Date().getFullYear());
+
+  /* ---------- Data ---------- */
+  var CARD_W = 85.6, CARD_H = 53.98;            // ISO/IEC 7810 ID-1 bank card, mm
+  var BAND = 2.0;                                 // ring band thickness, mm (visual only)
+  var SIZES = [
+    { us:'6',  mm:16.5 }, { us:'7',  mm:17.3 }, { us:'8',  mm:18.1 }, { us:'9',  mm:18.9 },
+    { us:'10', mm:19.8 }, { us:'11', mm:20.6 }, { us:'12', mm:21.4 }, { us:'13', mm:22.2 }
+  ];
+  var DEFAULT_PX_PER_MM = 96 / 25.4;              // CSS reference: 96 dpi
+
+  var pxPerMm = DEFAULT_PX_PER_MM;
+  var calibrated = false;
+  var sizeIndex = 3;                              // US 9 by default
+
+  try {
+    var saved = JSON.parse(localStorage.getItem('curio-sizer') || 'null');
+    if (saved && saved.pxPerMm > 2 && saved.pxPerMm < 8){ pxPerMm = saved.pxPerMm; calibrated = !!saved.calibrated; }
+    if (saved && saved.sizeIndex >= 0 && saved.sizeIndex < SIZES.length) sizeIndex = saved.sizeIndex;
+  } catch(e){}
+  function save(){
+    try { localStorage.setItem('curio-sizer', JSON.stringify({ pxPerMm:pxPerMm, calibrated:calibrated, sizeIndex:sizeIndex })); } catch(e){}
+  }
+
+  /* ---------- Steps ---------- */
+  var panels = [document.getElementById('p1'), document.getElementById('p2'), document.getElementById('p3')];
+  var steps = [document.getElementById('st1'), document.getElementById('st2'), document.getElementById('st3')];
+  function go(n){
+    panels.forEach(function(p,i){ p.classList.toggle('is-active', i === n); });
+    steps.forEach(function(s,i){
+      s.classList.toggle('is-current', i === n);
+      s.classList.toggle('is-done', i < n);
+    });
+    window.scrollTo({ top:0, behavior:'smooth' });
+    if (n === 1) drawRing();
+    if (n === 2) renderResult();
+  }
+
+  /* ---------- Step 1: calibration ---------- */
+  var cardShape = document.getElementById('cardShape');
+  var cal = document.getElementById('cal');
+  var calReadout = document.getElementById('calReadout');
+  var stage = cardShape.parentElement;
+
+  function portrait(){
+    // On narrow screens the landscape card would not fit: show it upright instead.
+    var avail = stage.clientWidth - 32;
+    return CARD_W * pxPerMm > avail;
+  }
+  function drawCard(){
+    var p = portrait();
+    cardShape.dataset.portrait = String(p);
+    var w = (p ? CARD_H : CARD_W) * pxPerMm, h = (p ? CARD_W : CARD_H) * pxPerMm;
+    cardShape.style.width = w + 'px';
+    cardShape.style.height = h + 'px';
+    cardShape.style.setProperty('--mm', pxPerMm + 'px');
+    calReadout.textContent = (p ? '54.0 × 85.6' : '85.6 × 54.0') + ' mm';
+    cal.value = pxPerMm.toFixed(2);
+  }
+  cal.addEventListener('input', function(){ pxPerMm = parseFloat(cal.value); drawCard(); });
+  document.getElementById('calMinus').addEventListener('click', function(){ pxPerMm = Math.max(2.4, pxPerMm - 0.02); drawCard(); });
+  document.getElementById('calPlus').addEventListener('click', function(){ pxPerMm = Math.min(7.5, pxPerMm + 0.02); drawCard(); });
+  window.addEventListener('resize', drawCard);
+
+  // Browser zoom hint (desktop only: devicePixelRatio is fractional when zoomed)
+  var dpr = window.devicePixelRatio || 1;
+  var zoomed = Math.abs(dpr - Math.round(dpr)) > 0.01 && !('ontouchstart' in window);
+  document.getElementById('zoomWarn').classList.toggle('is-on', zoomed);
+
+  document.getElementById('toStep2').addEventListener('click', function(){ calibrated = true; save(); go(1); });
+  document.getElementById('skipCal').addEventListener('click', function(){ calibrated = false; pxPerMm = DEFAULT_PX_PER_MM; save(); drawCard(); go(1); });
+
+  /* ---------- Step 2: compare ---------- */
+  var svg = document.getElementById('ringSvg');
+  var inner = document.getElementById('ringInner');
+  var outer = document.getElementById('ringOuter');
+  var label = document.getElementById('ringLabel');
+  var sizesEl = document.getElementById('sizes');
+
+  SIZES.forEach(function(s, i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'size';
+    b.innerHTML = '<strong>US ' + s.us + '</strong><small>' + s.mm.toFixed(1) + ' mm</small>';
+    b.addEventListener('click', function(){ setSize(i); });
+    sizesEl.appendChild(b);
+  });
+  function setSize(i){
+    sizeIndex = Math.max(0, Math.min(SIZES.length - 1, i));
+    save();
+    drawRing();
+  }
+  function drawRing(){
+    var s = SIZES[sizeIndex];
+    var rIn = s.mm / 2 * pxPerMm;
+    var rOut = rIn + BAND * pxPerMm;
+    var box = Math.ceil(rOut * 2 + 24);
+    svg.setAttribute('width', box); svg.setAttribute('height', box);
+    svg.setAttribute('viewBox', '0 0 ' + box + ' ' + box);
+    [inner, outer, label].forEach(function(el){ el.setAttribute('cx', box/2); el.setAttribute('cy', box/2); el.setAttribute('x', box/2); el.setAttribute('y', box/2); });
+    inner.setAttribute('r', rIn);
+    outer.setAttribute('r', rOut);
+    label.textContent = s.us;
+    label.setAttribute('font-size', Math.max(18, rIn * 0.7));
+    document.getElementById('sizeName').textContent = 'US ' + s.us;
+    document.getElementById('sizeMm').textContent = s.mm.toFixed(1);
+    Array.prototype.forEach.call(sizesEl.children, function(b, i){ b.setAttribute('aria-pressed', String(i === sizeIndex)); });
+    document.getElementById('sizeDown').disabled = sizeIndex === 0;
+    document.getElementById('sizeUp').disabled = sizeIndex === SIZES.length - 1;
+  }
+  document.getElementById('sizeDown').addEventListener('click', function(){ setSize(sizeIndex - 1); });
+  document.getElementById('sizeUp').addEventListener('click', function(){ setSize(sizeIndex + 1); });
+  document.addEventListener('keydown', function(e){
+    if (!panels[1].classList.contains('is-active')) return;
+    if (e.target && e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ e.preventDefault(); setSize(sizeIndex - 1); }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp'){ e.preventDefault(); setSize(sizeIndex + 1); }
+  });
+
+  // Paper strip: circumference → nearest size
+  var circ = document.getElementById('circ'), circOut = document.getElementById('circOut');
+  circ.addEventListener('input', function(){
+    var c = parseFloat(circ.value);
+    if (!(c > 0)){ circOut.textContent = 'enter a length'; return; }
+    var d = c / Math.PI, best = 0, bd = Infinity;
+    SIZES.forEach(function(s, i){ var dd = Math.abs(s.mm - d); if (dd < bd){ bd = dd; best = i; } });
+    circOut.textContent = 'US ' + SIZES[best].us + ' (' + d.toFixed(1) + ' mm across)';
+    setSize(best);
+  });
+
+  document.getElementById('backTo1').addEventListener('click', function(){ go(0); });
+  document.getElementById('toStep3').addEventListener('click', function(){ go(2); });
+
+  /* ---------- Step 3: result ---------- */
+  function renderResult(){
+    var s = SIZES[sizeIndex];
+    document.getElementById('resultSize').textContent = 'US ' + s.us;
+    document.getElementById('resultMm').textContent = s.mm.toFixed(1);
+    document.getElementById('resultCirc').textContent = (s.mm * Math.PI).toFixed(1);
+    document.getElementById('resultCta').href = 'index-light.html?size=' + encodeURIComponent(s.us) + '#contact';
+  }
+  document.getElementById('backTo2').addEventListener('click', function(){ go(1); });
+
+  /* ---------- Init ---------- */
+  drawCard();
+  drawRing();
+  // Returning visitor with a saved calibration: start on the comparison step
+  if (calibrated && /(^|[?&])step=2/.test(location.search)) go(1);
+})();
+</script>
+</body>
+</html>
