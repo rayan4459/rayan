@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>VegaPay — La bague de paiement</title>
-<meta name="description" content="VegaPay, la bague de paiement sans contact. Une bague, aucun écran, aucune recharge.">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:wght@200;300;400&display=swap">
+<title>Curio — The payment ring</title>
+<meta name="description" content="Curio, the contactless payment ring by CurioLab. One ring, no screen, no charging.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:wght@200;300;400;500&display=swap">
 <style>
   :root{
     --bg:#050506;
@@ -15,7 +15,10 @@
     --hairline:rgba(236,236,238,.14);
     --glass:rgba(236,236,238,.07);
     --glass-strong:rgba(236,236,238,.12);
-    --accent:#c9ccd4; /* argent froid, la couleur des reflets de la bague */
+    --accent:#c9ccd4; /* cold silver, the colour of the ring's reflections */
+    --blue:#5b9cff;
+    --blue-2:#2f6fd6;
+    --card-line:rgba(120,160,255,.32);
     --nfc:#7fb4ff;
   }
   :root:not([data-theme="light"]) body{ background:var(--bg); }
@@ -31,6 +34,7 @@
     overflow-x:hidden;
   }
   button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+  a{ color:inherit; text-decoration:none; }
   #stage{
     position:fixed; inset:0;
     z-index:0;
@@ -45,7 +49,7 @@
   }
 
   main{ position:relative; z-index:2; pointer-events:none; }
-  main a, main .hint, main .panel{ pointer-events:auto; }
+  main a, main button, main .hint, main .panel, main .cards, main .logos{ pointer-events:auto; }
 
   section{
     min-height:100vh;
@@ -54,7 +58,66 @@
     padding:0 clamp(24px, 7vw, 120px);
   }
 
-  /* ---------- Héro ---------- */
+  /* ---------- Shared type ---------- */
+  .eyebrow{
+    font-size:14px; letter-spacing:.04em;
+    color:var(--ink-dim);
+    margin-bottom:14px;
+  }
+  .h2{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    font-size:clamp(34px, 4.6vw, 58px);
+    line-height:1.12;
+    margin-bottom:.45em;
+  }
+  .lede{
+    color:var(--ink-dim);
+    font-size:clamp(15px, 1.5vw, 18px);
+    line-height:1.65;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:12px 26px; border-radius:8px;
+    background:linear-gradient(135deg, var(--blue), var(--blue-2));
+    color:#fff; font-weight:400; font-size:15px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.08) inset, 0 8px 30px rgba(47,111,214,.25);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 0 0 1px rgba(255,255,255,.12) inset, 0 12px 34px rgba(47,111,214,.35); }
+  .btn:active{ transform:none; }
+
+  /* Cards used by "Why businesses" and "From your idea" */
+  .cards{ display:grid; gap:18px; }
+  .card-b{
+    position:relative;
+    border:1px solid var(--card-line);
+    border-radius:18px;
+    background:rgba(8,9,14,.72);
+    -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+    padding:26px 26px 26px;
+  }
+  .card-b h3{
+    font-weight:400;
+    font-size:clamp(18px, 1.7vw, 22px);
+    margin-bottom:10px;
+  }
+  .card-b p, .card-b li{
+    color:var(--ink-dim);
+    font-size:clamp(14px, 1.3vw, 15.5px);
+    line-height:1.6;
+  }
+  .card-b ul{ list-style:none; }
+  .card-b li::before{ content:"▪"; font-size:.7em; margin-right:8px; color:var(--ink-dim); vertical-align:middle; }
+  .icon{
+    width:46px; height:46px; border-radius:10px; flex:none;
+    background:linear-gradient(160deg, #8fbcff, #3d7be0);
+    display:grid; place-items:center;
+    box-shadow:0 6px 20px rgba(61,123,224,.35);
+  }
+  .icon svg{ width:24px; height:24px; stroke:#0b1d3a; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---------- Hero ---------- */
   .hero{
     flex-direction:column;
     justify-content:center;
@@ -98,41 +161,60 @@
     .scroll-cue{ animation:none; }
   }
 
-  /* ---------- Chapitres ---------- */
-  .chapter .card{
-    max-width:26em;
+  /* ---------- Why businesses trust our expertise ---------- */
+  .why{
+    padding-top:12vh; padding-bottom:12vh;
   }
-  .chapter.right{ justify-content:flex-end; }
-  .chapter.right .card{ text-align:right; }
-  .chapter h2, .how h2{
-    font-family:'Cormorant Garamond',serif;
-    font-weight:500;
-    font-size:clamp(34px, 4.6vw, 58px);
-    line-height:1.12;
-    margin-bottom:.45em;
+  .why .grid{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr);
+    gap:clamp(28px, 5vw, 80px);
+    align-items:start;
   }
-  .chapter p{
-    color:var(--ink-dim);
-    font-size:clamp(15px, 1.5vw, 18px);
-    line-height:1.65;
-  }
-  .chapter .figure{
-    display:block;
-    margin-top:1.6em;
-    padding-top:1.1em;
-    border-top:1px solid var(--hairline);
-    color:var(--ink);
-    font-size:clamp(14px, 1.4vw, 16px);
-  }
-  .chapter .figure strong{
-    font-family:'Cormorant Garamond',serif;
-    font-weight:600;
-    font-size:1.9em;
-    display:block;
-    line-height:1.1;
-  }
+  .why .intro{ max-width:34em; padding-top:2vh; }
+  .why .intro .btn{ margin-top:28px; }
+  .why .cards{ grid-template-columns:1fr; }
+  .why .card-b{ display:flex; gap:20px; align-items:center; justify-content:space-between; }
 
-  /* ---------- Découvrez la bague (explorateur) ---------- */
+  /* ---------- Our partners ---------- */
+  .partners{
+    min-height:60vh;
+    padding-top:6vh; padding-bottom:6vh;
+  }
+  .partners .row{
+    width:100%;
+    display:flex; align-items:center; gap:clamp(28px, 5vw, 80px);
+    flex-wrap:wrap;
+  }
+  .partners .h2{ margin:0; min-width:5.5em; }
+  .logos{
+    display:flex; align-items:center; flex-wrap:wrap;
+    gap:clamp(18px, 3vw, 48px);
+    flex:1;
+  }
+  .logo{
+    display:inline-flex; align-items:center; gap:8px;
+    font-weight:500; letter-spacing:.06em; text-transform:uppercase;
+    font-size:clamp(15px, 1.5vw, 20px);
+    color:var(--ink);
+    opacity:.85;
+    transition:opacity .2s ease;
+    white-space:nowrap;
+  }
+  .logo:hover{ opacity:1; }
+  .logo img{ height:34px; width:auto; display:block; }
+  .logo--visa{ font-style:italic; font-weight:600; letter-spacing:.02em; font-size:clamp(20px, 2vw, 28px); color:#7fa9ff; }
+  .logo--mc{ gap:0; }
+  .logo--mc i{ display:block; width:28px; height:28px; border-radius:50%; }
+  .logo--mc i:first-child{ background:#eb001b; }
+  .logo--mc i:last-child{ background:#f79e1b; margin-left:-10px; mix-blend-mode:screen; }
+  .logo--infineon{ text-transform:none; font-weight:400; letter-spacing:0; font-size:clamp(20px, 2vw, 26px); color:#6fb2ff; }
+  .logo--nxp{ font-weight:600; letter-spacing:.1em; color:#c4d64a; }
+  .logo--usc{ text-transform:none; letter-spacing:0; font-weight:400; line-height:1; }
+  .logo--usc small{ display:block; font-size:.55em; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-dim); }
+
+  /* ---------- Discover the ring (explorer) ---------- */
   .explorer{
     align-items:center;
     padding-top:12vh; padding-bottom:12vh;
@@ -149,12 +231,7 @@
     line-height:1.12;
     margin-bottom:.45em;
   }
-  .explorer .lede{
-    color:var(--ink-dim);
-    font-size:clamp(15px, 1.5vw, 18px);
-    line-height:1.6;
-    margin-bottom:1.6em;
-  }
+  .explorer .lede{ margin-bottom:1.6em; }
   .explorer .arrows{
     position:absolute; left:0; top:50%;
     transform:translateY(-50%);
@@ -242,7 +319,7 @@
   .size:hover{ background:var(--glass); }
   .size[aria-pressed="true"]{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
 
-  /* ---------- Comment ça marche ---------- */
+  /* ---------- How it works ---------- */
   .how{
     flex-direction:column;
     align-items:flex-start;
@@ -251,18 +328,12 @@
     padding-top:12vh; padding-bottom:12vh;
   }
   .how .head{ max-width:30em; }
-  .how .head p{
-    color:var(--ink-dim);
-    font-size:clamp(15px, 1.5vw, 18px);
-    line-height:1.65;
-  }
   .steps{
     list-style:none;
     display:grid;
     grid-template-columns:repeat(3, 1fr);
     gap:clamp(20px, 3vw, 44px);
     width:100%;
-    counter-reset:step;
   }
   .step{
     border-top:1px solid var(--hairline);
@@ -288,6 +359,26 @@
     font-size:clamp(14px, 1.35vw, 16px);
     line-height:1.6;
   }
+
+  /* ---------- From your idea to implementation ---------- */
+  .idea{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:clamp(24px, 4vh, 44px);
+    padding-top:12vh; padding-bottom:12vh;
+  }
+  .idea .head{ max-width:42em; }
+  .idea .head .h2{ margin-bottom:.3em; }
+  .idea .cards{
+    width:100%;
+    grid-template-columns:repeat(3, 1fr);
+    text-align:left;
+  }
+  .idea .card-b{ min-height:230px; }
+  .idea .card-b .icon{ position:absolute; top:22px; right:22px; }
+  .idea .card-b h3{ margin-top:70px; }
 
   /* ---------- Closer ---------- */
   .closer{
@@ -315,48 +406,53 @@
   .closer .hint svg{ opacity:.7; }
   .closer .spacer{ flex:1; min-height:44vh; }
 
+  /* ---------- Footer ---------- */
   footer{
     position:relative; z-index:2;
-    padding:60px clamp(24px, 7vw, 120px) 80px;
+    padding:60px clamp(24px, 7vw, 120px) 40px;
     color:var(--ink-dim);
     font-size:14px;
     line-height:1.7;
     border-top:1px solid var(--hairline);
     background:var(--bg);
   }
+  footer .cols{
+    display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:32px;
+    padding-bottom:36px; border-bottom:1px solid var(--hairline);
+  }
   footer .fm{
     font-family:'Cormorant Garamond',serif;
     color:var(--ink);
-    font-size:20px;
+    font-size:26px;
     margin-bottom:8px;
   }
+  footer h4{ color:var(--ink); font-weight:400; font-size:16px; margin-bottom:6px; }
+  footer .legal{ display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-top:22px; font-size:13px; }
 
-  /* ---------- Apparitions ---------- */
-  .chapter .card, .hero > *, .closer h2, .closer .hint, .explorer .panel, .how > *{
+  /* ---------- Reveal ---------- */
+  .hero > *, .closer h2, .closer .hint, .explorer .panel, .how > *, .why > *, .partners > *, .idea > *{
     opacity:0;
     transform:translateY(14px);
     transition:opacity .9s ease, transform .9s ease;
   }
-  .inview .card, .inview > *, .inview h2, .inview .hint, .inview .panel{
+  .inview > *, .inview h2, .inview .hint, .inview .panel{
     opacity:1; transform:none;
   }
   @media (prefers-reduced-motion: reduce){
-    .chapter .card, .hero > *, .closer h2, .closer .hint, .explorer .panel, .how > *{ transition:none; opacity:1; transform:none; }
+    .hero > *, .closer h2, .closer .hint, .explorer .panel, .how > *, .why > *, .partners > *, .idea > *{ transition:none; opacity:1; transform:none; }
   }
 
-  /* ---------- Mobile ---------- */
+  /* ---------- Responsive ---------- */
+  @media (max-width:1000px){
+    .why .grid{ grid-template-columns:1fr; }
+    .idea .cards{ grid-template-columns:1fr 1fr; }
+    footer .cols{ grid-template-columns:1fr 1fr; }
+  }
   @media (max-width:900px){
     .steps{ grid-template-columns:1fr; gap:22px; }
     .how{ justify-content:flex-end; padding-bottom:10vh; }
   }
   @media (max-width:680px){
-    .chapter{ align-items:flex-end; padding-bottom:12vh; }
-    .chapter.right{ justify-content:flex-start; }
-    .chapter.right .card{ text-align:left; }
-    .chapter .card{
-      background:linear-gradient(rgba(5,5,6,0), rgba(5,5,6,.72) 30%);
-      padding-top:30px;
-    }
     .explorer{ align-items:flex-end; padding-top:44vh; padding-bottom:6vh; }
     .explorer .panel{
       padding-left:0; width:100%;
@@ -366,15 +462,14 @@
     .features{ gap:8px; }
     .explorer .arrows{ position:static; transform:none; flex-direction:row; margin-bottom:12px; }
     .explorer h2{ font-size:clamp(30px, 8vw, 40px); }
-    .explorer h2{
-    font-family:'Cormorant Garamond',serif;
-    font-weight:500;
-    font-size:clamp(32px, 3.6vw, 48px);
-    line-height:1.12;
-    margin-bottom:.45em;
-  }
-  .explorer .lede{ margin-bottom:1em; }
+    .explorer .lede{ margin-bottom:1em; }
     .how{ background:linear-gradient(rgba(5,5,6,0), rgba(5,5,6,.6) 25%); }
+    .why{ padding-top:8vh; }
+    .why .card-b{ flex-direction:column; align-items:flex-start; }
+    .idea .cards{ grid-template-columns:1fr; }
+    .idea .card-b{ min-height:0; }
+    .partners .row{ flex-direction:column; align-items:flex-start; gap:20px; }
+    footer .cols{ grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -384,52 +479,82 @@
 <div class="veil"></div>
 
 <main>
+  <!-- ===== Hero ===== -->
   <section class="hero" id="hero">
-    <div class="wordmark">Vega<span class="star">✦</span>Pay</div>
-    <p>Le paiement au bout du doigt. Une bague, aucun écran, aucune recharge.</p>
+    <div class="wordmark">Curio<span class="star">✦</span></div>
+    <p>Payment at your fingertip. One ring, no screen, no charging.</p>
     <div class="scroll-cue" aria-hidden="true"></div>
   </section>
 
-  <section class="chapter" data-view="1">
-    <div class="card">
-      <h2>Zircone céramique noire, brossée à la main.</h2>
-      <p>La bande centrale est satinée par micro-abrasion, dans le sens du geste. Elle absorbe la lumière là où le métal la renverrait — et ne garde ni traces de doigts, ni rayures du quotidien.</p>
-      <span class="figure"><strong>9&nbsp;Mohs</strong>Une dureté proche du saphir. L'acier ne la raye pas.</span>
+  <!-- ===== Why businesses trust our expertise ===== -->
+  <section class="why" id="why" data-view="why">
+    <div class="grid">
+      <div class="intro">
+        <p class="eyebrow">Why Choose Us</p>
+        <h2 class="h2">Why Businesses Trust Our Expertise</h2>
+        <p class="lede">With customer's best interest in mind, we offer our expertise and industry knowledge to deliver solutions with innovation and efficiency.</p>
+        <a class="btn" href="#contact">Get In Touch</a>
+      </div>
+      <div class="cards">
+        <article class="card-b">
+          <div>
+            <h3>Our Expertise</h3>
+            <ul>
+              <li>Wearables Manufacturing</li>
+              <li>Advanced engineering</li>
+              <li>Hardware-software integration</li>
+              <li>Rigorous quality control</li>
+            </ul>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></span>
+        </article>
+        <article class="card-b">
+          <div>
+            <h3>Strong And Reliable Partnerships</h3>
+            <ul>
+              <li>End-to-end logistics providers</li>
+              <li>Prepaid and Tokenisation Integrations</li>
+              <li>Bespoke and mass product manufacturing partners</li>
+            </ul>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M3 12h3M18 12h3"/></svg></span>
+        </article>
+        <article class="card-b">
+          <div>
+            <h3>Proven Track Record</h3>
+            <p>Partnering with Digiseq, a number of successful projects have been delivered, from common wearable product to sophisticated wearable-based event management solutions now available commercially.</p>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5 7 21l5-2.5L17 21l-1.5-7.5"/></svg></span>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="chapter right" data-view="2">
-    <div class="card">
-      <h2>Des biseaux polis miroir.</h2>
-      <p>Deux chanfreins à 30° encadrent la bande mate. Polis en fin de cuisson, ils attrapent la lumière en un fil continu — c'est la seule ligne brillante de la bague, et elle suit votre main.</p>
+  <!-- ===== Our partners ===== -->
+  <section class="partners" id="partners" data-view="partners">
+    <div class="row">
+      <h2 class="h2">Our<br>Partners</h2>
+      <div class="logos" aria-label="Our partners">
+        <span class="logo logo--digiseq">Digiseq</span>
+        <span class="logo logo--usc">universal<small>smart cards</small></span>
+        <span class="logo logo--mc" aria-label="Mastercard"><i></i><i></i></span>
+        <span class="logo logo--visa">VISA</span>
+        <span class="logo logo--infineon">infineon</span>
+        <span class="logo logo--nxp">NXP</span>
+      </div>
     </div>
   </section>
 
-  <section class="chapter" data-view="3">
-    <div class="card">
-      <h2>Gravée, pas imprimée.</h2>
-      <p>À l'intérieur, le nom est gravé au laser sous la surface polie. Il ne s'effacera pas — vous seul savez qu'il est là.</p>
-    </div>
-  </section>
-
-  <section class="chapter right" data-view="4">
-    <div class="card">
-      <h2>Sans batterie. Sans recharge. Sans y penser.</h2>
-      <p>La puce NFC passive s'alimente au contact du terminal. Approchez la main, c'est payé. Étanche, elle vous suit sous la pluie, à la piscine, partout.</p>
-      <span class="figure"><strong>0&nbsp;recharge</strong>À vie. La bague n'a pas de batterie du tout.</span>
-    </div>
-  </section>
-
-  <!-- ===== Découvrez la bague : la bague s'oriente sur chaque caractéristique ===== -->
+  <!-- ===== Discover the ring: the ring turns towards each feature ===== -->
   <section class="explorer" id="explorer" data-view="explorer">
     <div class="panel">
-      <h2>Découvrez la bague.</h2>
-      <p class="lede">Sélectionnez une caractéristique pour la voir de près.</p>
-      <div class="arrows" aria-label="Parcourir les caractéristiques">
-        <button class="arrow" id="featPrev" type="button" aria-label="Caractéristique précédente">
+      <h2>Discover the ring.</h2>
+      <p class="lede">Select a feature to see it up close.</p>
+      <div class="arrows" aria-label="Browse features">
+        <button class="arrow" id="featPrev" type="button" aria-label="Previous feature">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="arrow" id="featNext" type="button" aria-label="Caractéristique suivante">
+        <button class="arrow" id="featNext" type="button" aria-label="Next feature">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -437,89 +562,148 @@
     </div>
   </section>
 
-  <!-- ===== Comment ça marche ===== -->
+  <!-- ===== How it works ===== -->
   <section class="how" id="how" data-view="how">
     <div class="head">
-      <h2>Comment ça marche.</h2>
-      <p>Trois gestes, et plus jamais de carte à sortir.</p>
+      <h2 class="h2">How it works.</h2>
+      <p class="lede">Three steps, and never a card to take out again.</p>
     </div>
     <ol class="steps">
       <li class="step">
         <span class="num">01</span>
-        <h3>Choisissez votre taille</h3>
-        <p>Commandez votre bague, ou recevez d'abord notre baguier gratuit pour trouver la taille parfaite.</p>
+        <h3>Choose your size</h3>
+        <p>Order your ring, or receive our free ring sizer first to find the perfect fit.</p>
       </li>
       <li class="step">
         <span class="num">02</span>
-        <h3>Activez-la dans l'app</h3>
-        <p>Associez votre carte en deux minutes depuis l'application VegaPay. Vos données restent chiffrées, dans la puce, jamais ailleurs.</p>
+        <h3>Activate it in the app</h3>
+        <p>Link your card in two minutes from the Curio app. Your data stays encrypted, in the chip, nowhere else.</p>
       </li>
       <li class="step">
         <span class="num">03</span>
-        <h3>Payez d'un geste</h3>
-        <p>Approchez votre main du terminal. Partout où le sans contact est accepté, votre bague fonctionne.</p>
+        <h3>Pay with a gesture</h3>
+        <p>Bring your hand close to the terminal. Wherever contactless is accepted, your ring works.</p>
       </li>
     </ol>
   </section>
 
+  <!-- ===== From your idea to implementation ===== -->
+  <section class="idea" id="idea" data-view="idea">
+    <div class="head">
+      <h2 class="h2">From Your Idea To Implementation Of Every Aspect.</h2>
+      <p class="lede">Integrating wearable products into your portfolio has never been easier.</p>
+    </div>
+    <div class="cards">
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/><path d="M7 8h6M7 11h4"/></svg></span>
+        <h3>Payment-Enabled Wearables</h3>
+        <p>Integrating payment-certified secure element, these wearables enable contactless payments with a simple tap. Compatible with any terminal in the world, wearables bring payments to new levels of convenience.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 15a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.5 3.5 0 0 1 17 15H7z"/><path d="M12 15v5M9 20h6"/></svg></span>
+        <h3>Specialized Wearables</h3>
+        <p>Your imagination and needs is the only limit - from fitness rings to healthcare and emergency contactless bracelets, to branded event wearables to augment guest experience.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg></span>
+        <h3>Fan ID</h3>
+        <p>Fan ID is the secure way to manage visitor identification and access, preventing ticket fraud and ensuring only verified guests attendance. Fan ID can also implement transit, hotel access and customised user experience.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3v1a3 3 0 0 0-2 3 3 3 0 0 0 2 3v1a3 3 0 0 0 3 3h3V4H9z"/><path d="M15 4a3 3 0 0 1 3 3v1a3 3 0 0 1 2 3 3 3 0 0 1-2 3v1a3 3 0 0 1-3 3h-3V4h3z"/></svg></span>
+        <h3>Consulting</h3>
+        <p>Expert advice to align your technology strategy with your business goals and boost overall efficiency.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 5.5a3.5 3.5 0 0 0 4 4L8 20l-4-4L14.5 5.5z"/><path d="M15 13l4 4"/></svg></span>
+        <h3>Wearable Apps</h3>
+        <p>We assist building your own mobile apps that integrate with wearables - from simple whitelabel apps to SDKs for mobile platforms for seamless customer journey.</p>
+      </article>
+      <article class="card-b">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6"/><path d="M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg></span>
+        <h3>Event Management</h3>
+        <p>Reliable and flexible event management solution integrating conventional and wearable based-features - VIP tracking and management, personalised content delivery via PromoReady, vouchers and cloakroom and others.</p>
+      </article>
+    </div>
+    <a class="btn" href="#contact">Learn More</a>
+  </section>
+
+  <!-- ===== Closer look ===== -->
   <section class="closer" id="closer" data-view="closer">
-    <h2>Regardez-la de plus près.</h2>
+    <h2>Take a closer look.</h2>
     <span class="hint" id="dragHint">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0Z"/><path d="M2 12h3m14 0h3M12 2v3m0 14v3"/></svg>
-      Faites-la tourner du doigt ou à la souris
+      Spin it with your finger or your mouse
     </span>
     <div class="spacer"></div>
   </section>
 </main>
 
-<footer>
-  <div class="fm">Vega✦Pay</div>
-  Démo technique — bague modélisée procéduralement et rendue en temps réel dans votre navigateur.
+<footer id="contact">
+  <div class="cols">
+    <div>
+      <div class="fm">Curio✦</div>
+      <p>The payment ring by CurioLab. Modelled procedurally and rendered in real time in your browser.</p>
+    </div>
+    <div>
+      <h4>Address</h4>
+      <p>ALDEN TECHNOLOGY FZCO<br>Building A1, Dubai Silicon Oasis, Dubai, UAE</p>
+    </div>
+    <div>
+      <h4>Email</h4>
+      <p><a href="mailto:hello@curiolab.me">hello@curiolab.me</a></p>
+    </div>
+  </div>
+  <div class="legal">
+    <span>© <span id="year"></span> Alden Limited. All rights reserved.</span>
+    <span>curiolab.me</span>
+  </div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('year').textContent = String(new Date().getFullYear());
 
   /* ============================================================
-     CONTENU DE L'EXPLORATEUR — modifiez librement
+     EXPLORER CONTENT — edit freely
      ============================================================ */
-  var ENGRAVING = 'Vega✦Pay';
+  var ENGRAVING = 'Curio✦';
 
   var FINISHES = [
-    { id:'noir',   label:'noir céramique', band:0x1b1b1d, polish:0x0c0c0e, engraving:0x8a8a92, swatch:'#141416' },
-    { id:'titane', label:'titane brossé',  band:0x8f9298, polish:0xc9ccd1, engraving:0x2a2a2e, swatch:'#b9bcc2' },
-    { id:'or',     label:'or rose',        band:0xc9977f, polish:0xe6bda8, engraving:0x4a2e24, swatch:'#dcae98' },
-    { id:'nuit',   label:'bleu nuit',      band:0x1e2b4d, polish:0x0f1730, engraving:0xb9c4e6, swatch:'#1b2745' }
+    { id:'black',    label:'black ceramic',   band:0x1b1b1d, polish:0x0c0c0e, engraving:0x8a8a92, swatch:'#141416' },
+    { id:'titanium', label:'brushed titanium', band:0x8f9298, polish:0xc9ccd1, engraving:0x2a2a2e, swatch:'#b9bcc2' },
+    { id:'rose',     label:'rose gold',       band:0xc9977f, polish:0xe6bda8, engraving:0x4a2e24, swatch:'#dcae98' },
+    { id:'night',    label:'midnight blue',   band:0x1e2b4d, polish:0x0f1730, engraving:0xb9c4e6, swatch:'#1b2745' }
   ];
   var SIZES = ['6','7','8','9','10','11','12','13'];
 
-  /* Chaque caractéristique : titre, texte, et la vue de la bague.
-     view : z = distance caméra, rx = inclinaison (π/2 = de face), ry = rotation,
-            rz = roulis. spin = angle absolu de rotation (gèle la rotation lente),
-            nfc = ondes sans contact, kind = 'colors' | 'sizes'.                 */
+  /* Each feature: title, text, and the ring view.
+     view : z = camera distance, rx = tilt (π/2 = face on), ry = turn, rz = roll,
+            fx/fy = offset in the frame. spin = absolute angle (freezes the slow turn),
+            nfc = contactless waves, kind = 'colors' | 'sizes'.                        */
   var FEATURES = [
-    { id:'finitions', title:'Finitions', kind:'colors',
-      text:'Quatre finitions, une seule silhouette. Présentée ici en',
+    { id:'finishes', title:'Finishes', kind:'colors',
+      text:'Four finishes, one silhouette. Shown here in',
       view:{ z:6.4, rx:1.10, ry:0.55, rz:0.12 } },
-    { id:'ceramique', title:'Céramique brossée',
-      text:'La bande centrale est satinée par micro-abrasion. Elle ne garde ni traces de doigts, ni rayures : dureté 9 Mohs, proche du saphir.',
+    { id:'ceramic', title:'Brushed ceramic',
+      text:'The central band is satin-finished by micro-abrasion. It keeps neither fingerprints nor scratches: 9 Mohs hardness, close to sapphire.',
       view:{ z:3.1, rx:0.25, ry:0.4, rz:0.06 } },
-    { id:'biseaux', title:'Biseaux polis miroir',
-      text:'Deux chanfreins à 30° encadrent la bande mate. Polis en fin de cuisson, ils attrapent la lumière en un fil continu.',
+    { id:'bevels', title:'Mirror-polished bevels',
+      text:'Two 30° chamfers frame the matte band. Polished at the end of firing, they catch the light in one continuous line.',
       view:{ z:3.8, rx:1.95, ry:-0.6, rz:-0.3 } },
-    { id:'gravure', title:'Gravure intérieure',
-      text:'Le nom est gravé au laser sous la surface polie de l’intérieur. Il ne s’effacera jamais. Personnalisez-la avec vos initiales à la commande.',
+    { id:'engraving', title:'Inner engraving',
+      text:'The name is laser-engraved under the polished inner surface. It will never fade. Personalise it with your initials when you order.',
       view:{ z:4.8, rx:1.18, ry:0, rz:0, fx:0.02, fy:-0.42 }, spin:-0.3 },
-    { id:'paiement', title:'Paiement sans contact', nfc:true,
-      text:'Une antenne NFC passive dans l’anneau. Approchez la main du terminal : le paiement est validé en moins d’une seconde, partout où le sans contact est accepté.',
+    { id:'payment', title:'Contactless payment', nfc:true,
+      text:'A passive NFC antenna inside the band. Bring your hand to the terminal: the payment is confirmed in under a second, wherever contactless is accepted.',
       view:{ z:5.8, rx:1.25, ry:0.3, rz:0 } },
-    { id:'batterie', title:'Sans batterie',
-      text:'La bague s’alimente au contact du terminal. Aucune recharge, aucun câble, aucune panne. Elle fonctionne à vie.',
+    { id:'battery', title:'No battery',
+      text:'The ring is powered by the terminal at the moment of payment. No charging, no cable, no failure. It works for life.',
       view:{ z:5.6, rx:0.62, ry:-0.7, rz:-0.1 } },
-    { id:'tailles', title:'Huit tailles', kind:'sizes',
-      text:'De la taille 6 à la taille 13. Pas sûr de la vôtre ? Nous vous envoyons un baguier gratuit avant l’expédition.',
+    { id:'sizes', title:'Eight sizes', kind:'sizes',
+      text:'From size 6 to size 13. Not sure of yours? We send you a free ring sizer before shipping.',
       view:{ z:5.8, rx:Math.PI/2, ry:0, rz:0 } }
   ];
 
@@ -539,7 +723,7 @@
   var FOV = 34;
   var camera = new THREE.PerspectiveCamera(FOV, window.innerWidth/window.innerHeight, 0.1, 100);
 
-  /* ---------- Environnement studio (équirectangulaire procédural) ---------- */
+  /* ---------- Studio environment (procedural equirectangular) ---------- */
   function studioEnv(){
     var c = document.createElement('canvas');
     c.width = 1024; c.height = 512;
@@ -558,10 +742,10 @@
       x.beginPath(); x.arc(0,0,Math.max(w,h),0,Math.PI*2); x.fill();
       x.restore();
     }
-    softbox(260, 120, 300, 70, .95, -0.08);   // grande rampe haute
-    softbox(790, 150, 220, 55, .75, 0.1);     // seconde rampe
-    softbox(520, 330, 420, 40, .28, 0);       // strip bas, remplissage
-    softbox(60, 240, 60, 160, .35, 0);        // kick latéral
+    softbox(260, 120, 300, 70, .95, -0.08);   // main top softbox
+    softbox(790, 150, 220, 55, .75, 0.1);     // second softbox
+    softbox(520, 330, 420, 40, .28, 0);       // low strip, fill
+    softbox(60, 240, 60, 160, .35, 0);        // side kick
     var tex = new THREE.CanvasTexture(c);
     tex.mapping = THREE.EquirectangularReflectionMapping;
     var pmrem = new THREE.PMREMGenerator(renderer);
@@ -582,7 +766,7 @@
     var c = document.createElement('canvas');
     c.width = 512; c.height = 128;
     var x = c.getContext('2d');
-    x.fillStyle = '#b4b4b4'; x.fillRect(0,0,512,128);  // rugosité de base ~0.7
+    x.fillStyle = '#b4b4b4'; x.fillRect(0,0,512,128);  // base roughness ~0.7
     for (var i=0;i<900;i++){
       var y = Math.random()*128;
       var v = 150 + Math.random()*90|0;
@@ -599,7 +783,7 @@
     return t;
   }
   function engravingMap(){
-    // Texte blanc sur fond transparent : la couleur est donnée par le matériau (selon la finition)
+    // White text on a transparent background: the colour comes from the material (per finish)
     var c = document.createElement('canvas');
     c.width = 2048; c.height = 256;
     var x = c.getContext('2d');
@@ -607,7 +791,7 @@
     x.fillStyle = '#ffffff';
     x.font = '500 118px "Cormorant Garamond", serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.save(); x.translate(1024,132); x.scale(-1,1);   // miroir : lisible depuis l'intérieur
+    x.save(); x.translate(1024,132); x.scale(-1,1);   // mirrored: readable from the inside
     x.fillText(ENGRAVING, 0, 0);
     x.restore();
     var t = new THREE.CanvasTexture(c);
@@ -616,8 +800,8 @@
     return t;
   }
 
-  /* ---------- Géométrie de la bague (mêmes cotes que le .glb) ---------- */
-  var RI=8.75, RO=10.75, RL=10.35, ZB=2.55, ZL=3.65, H=4.0, S=0.1; // 1 unité = 1 cm
+  /* ---------- Ring geometry (same dimensions as the .glb) ---------- */
+  var RI=8.75, RO=10.75, RL=10.35, ZB=2.55, ZL=3.65, H=4.0, S=0.1; // 1 unit = 1 cm
   function lathe(points, mat, segs){
     var pts = points.map(function(p){ return new THREE.Vector2(p[0]*S, p[1]*S); });
     var g = new THREE.LatheGeometry(pts, segs||220);
@@ -640,15 +824,15 @@
   });
 
   var ring = new THREE.Group();
-  ring.add(lathe([[RO,-ZB],[RO,ZB]], matBrushed));                      // bande centrale
-  ring.add(lathe([[RI,-H],[RL,-H],[RL,-ZL],[RO,-ZB]], matPolished));    // biseau + chant gauche
-  ring.add(lathe([[RO,ZB],[RL,ZL],[RL,H],[RI,H]], matPolished));        // biseau + chant droit
-  ring.add(lathe([[RI,-H],[RI,H]], matInner, 220));                     // intérieur poli
+  ring.add(lathe([[RO,-ZB],[RO,ZB]], matBrushed));                      // central band
+  ring.add(lathe([[RI,-H],[RL,-H],[RL,-ZL],[RO,-ZB]], matPolished));    // bevel + left edge
+  ring.add(lathe([[RO,ZB],[RL,ZL],[RL,H],[RI,H]], matPolished));        // bevel + right edge
+  ring.add(lathe([[RI,-H],[RI,H]], matInner, 220));                     // polished inside
   var engraving = new THREE.Mesh(
-    new THREE.CylinderGeometry(RI*S-0.004, RI*S-0.004, H*S*1.5, 220, 1, true), matEngraving); // gravure
+    new THREE.CylinderGeometry(RI*S-0.004, RI*S-0.004, H*S*1.5, 220, 1, true), matEngraving); // engraving
   ring.add(engraving);
 
-  // Ondes NFC (visibles seulement sur la caractéristique « paiement »)
+  // NFC waves (only visible on the "payment" feature)
   var waves = [];
   for (var w=0; w<3; w++){
     var wm = new THREE.Mesh(
@@ -659,7 +843,7 @@
     ring.add(wm); waves.push(wm);
   }
 
-  // la bague est générée autour de Y ; on la met "debout" (axe horizontal)
+  // the ring is generated around Y; we stand it up (horizontal axis)
   ring.rotation.order = 'YXZ';
   scene.add(ring);
 
@@ -670,33 +854,32 @@
     matEngraving.color.setHex(f.engraving);
   }
 
-  /* ---------- Chorégraphie du scroll (style Apple) ---------- */
-  // Une "vue" = cadrage caméra + orientation de la bague, associée à chaque section.
-  //   z = distance caméra, y = hauteur caméra, rx/ry/rz = orientation,
-  //   fx/fy = décalage de la bague en fraction du demi-écran (pour laisser la place au texte)
+  /* ---------- Scroll choreography (Apple style) ---------- */
+  // A "view" = camera framing + ring orientation, tied to each section.
+  //   z = camera distance, y = camera height, rx/ry/rz = orientation,
+  //   fx/fy = ring offset as a fraction of the half-screen (to make room for text)
   var VIEWS = {
-    hero:     { z:6.2, y:0.05, rx:1.35, ry:0.55, rz:0.10 },  // héro : presque de face, légère plongée
-    1:        { z:3.4, y:0.02, rx:1.05, ry:2.10, rz:0.25 },  // gros plan bande brossée
-    2:        { z:3.9, y:-0.12, rx:2.05, ry:3.60, rz:-0.35 },// biseau qui attrape la lumière
-    3:        { z:3.1, y:0.0,  rx:0.25, ry:5.25, rz:0.05 },  // vue traversante : gravure intérieure
-    4:        { z:5.0, y:0.05, rx:1.30, ry:7.20, rz:0.15 },  // recul, rotation continue
-    explorer: null,                                          // piloté par la caractéristique choisie
-    how:      { z:7.5, y:0.0,  rx:1.40, ry:8.20, rz:0.0, fy:-0.95 }, // la bague s'efface sous les étapes
-    closer:   { z:5.6, y:0.0,  rx:1.20, ry:8.60, rz:0.0  }   // closer look (point de départ du drag)
+    hero:     { z:6.2, y:0.05, rx:1.35, ry:0.55, rz:0.10 },               // hero: almost face on, slight high angle
+    why:      { z:7.5, y:0.0,  rx:1.05, ry:2.10, rz:0.25, fx:-0.5, fy:-1.0 },  // peeks in below the intro text, left
+    partners: { z:8.5, y:0.0,  rx:1.30, ry:3.60, rz:0.0,  fx:0,     fy:-1.35 }, // slips out of frame
+    explorer: null,                                                       // driven by the selected feature
+    how:      { z:7.5, y:0.0,  rx:1.40, ry:8.20, rz:0.0,  fy:-0.95 },      // fades under the steps
+    idea:     { z:8.5, y:0.0,  rx:1.30, ry:9.40, rz:0.0,  fy:-1.4 },       // out of frame behind the cards
+    closer:   { z:5.6, y:0.0,  rx:1.20, ry:10.6, rz:0.0  }                 // closer look (drag starting point)
   };
   function smooth(t){ return t*t*(3-2*t); }
   function lerp(a,b,t){ return a+(b-a)*t; }
 
   var explorerView = { z:6.4, y:0, rx:1.1, ry:0.55, rz:0.12, fx:0, fy:0 };
-  var explorerSpin = null;      // angle absolu demandé (gravure) ou null
-  var explorerActive = 0;       // 0..1 : poids de la vue « explorateur » dans le mélange courant
+  var explorerSpin = null;      // absolute angle requested (engraving) or null
+  var explorerActive = 0;       // 0..1: weight of the explorer view in the current blend
 
   function explorerTarget(){
-    // Sur écran large la bague s'écarte à droite du panneau ; sur mobile elle passe au-dessus.
+    // On wide screens the ring moves right of the panel; on mobile it goes above it.
     var aspect = window.innerWidth/window.innerHeight;
     var narrow = window.innerWidth <= 680;
     var v = explorerView;
-    var zoom = narrow ? 1.45/aspect : Math.max(1, 1.15/aspect); // portrait : on recule, la bague passe au-dessus du panneau
+    var zoom = narrow ? 1.45/aspect : Math.max(1, 1.15/aspect); // portrait: pull back, ring above the panel
     return {
       z: v.z*zoom, y: 0, rx: v.rx, ry: v.ry, rz: v.rz,
       fx: narrow ? 0 : 0.5 + (v.fx||0),
@@ -708,15 +891,17 @@
   function viewOf(section){
     var k = section.getAttribute('data-view') || section.id;
     if (k === 'explorer') return explorerTarget();
-    return VIEWS[k] || VIEWS.hero;
+    var v = VIEWS[k] || VIEWS.hero;
+    if (k === 'why' && window.innerWidth <= 1000) return { z:v.z, y:v.y, rx:v.rx, ry:v.ry, rz:v.rz, fx:0, fy:-1.3 };
+    return v;
   }
   function scrollTargets(){
-    // Interpolation entre les vues des deux sections qui encadrent le centre de l'écran.
+    // Interpolate between the views of the two sections bracketing the screen centre.
     var vh = window.innerHeight, mid = vh*0.5;
     var prev = null, next = null, prevD = -Infinity, nextD = Infinity;
     for (var i=0;i<sections.length;i++){
       var r = sections[i].getBoundingClientRect();
-      var d = r.top + r.height*0.5 - mid;   // <0 : section déjà passée
+      var d = r.top + r.height*0.5 - mid;   // <0: section already passed
       if (d <= 0 && d > prevD){ prevD = d; prev = sections[i]; }
       if (d > 0 && d < nextD){ nextD = d; next = sections[i]; }
     }
@@ -737,7 +922,7 @@
   var dragX = 0, dragY = 0, dragVX = 0;
   var idle = 0;
 
-  /* ---------- Interaction "closer look" + explorateur ---------- */
+  /* ---------- "Closer look" + explorer interaction ---------- */
   var closer = document.getElementById('closer');
   var explorerEl = document.getElementById('explorer');
   var dragging = false, px=0, py=0, dragUsed=false;
@@ -774,7 +959,8 @@
   window.addEventListener('touchmove', onMove, {passive:false});
   window.addEventListener('touchend', onUp);
 
-  /* ---------- Explorateur : liste des caractéristiques ---------- */
+  /* ---------- Explorer: feature list ---------- */
+  var nfcTarget = 0;
   (function buildExplorer(){
     var list = document.getElementById('features');
     var prevBtn = document.getElementById('featPrev');
@@ -787,7 +973,7 @@
     function renderCard(card, f, btn){
       if (f.kind === 'colors'){
         card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+' <span class="finish-name">'+finish.label+'</span>.</p>'+
-                         '<div class="swatches" role="group" aria-label="Choisir une finition"></div>';
+                         '<div class="swatches" role="group" aria-label="Choose a finish"></div>';
         var sw = card.querySelector('.swatches');
         FINISHES.forEach(function(fin){
           var b = document.createElement('button');
@@ -804,7 +990,7 @@
           sw.appendChild(b);
         });
       } else if (f.kind === 'sizes'){
-        card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+'</p><div class="sizes" role="group" aria-label="Choisir une taille"></div>';
+        card.innerHTML = '<p><b>'+f.title+'.</b> '+f.text+'</p><div class="sizes" role="group" aria-label="Choose a size"></div>';
         var wrap = card.querySelector('.sizes');
         SIZES.forEach(function(s){
           var b = document.createElement('button');
@@ -867,22 +1053,22 @@
     select(0);
   })();
 
-  /* ---------- Apparition des textes ---------- */
+  /* ---------- Text reveal ---------- */
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(en){
       if (en.isIntersecting) en.target.classList.add('inview');
     });
-  }, { threshold: 0.35 });
+  }, { threshold: 0.15 });
   sections.forEach(function(s){ io.observe(s); });
 
-  /* ---------- Boucle ---------- */
-  var nfcTarget = 0, nfcLevel = 0, clock = 0;
+  /* ---------- Loop ---------- */
+  var nfcLevel = 0, clock = 0;
   function frame(){
     clock += 1/60;
     var tgt = scrollTargets();
     var ease = reduceMotion ? 1 : 0.075;
 
-    // Gravure : on gèle la rotation lente et on vise un angle absolu, par le chemin le plus court.
+    // Engraving: freeze the slow turn and aim for an absolute angle, by the shortest path.
     var spinLock = explorerSpin != null && explorerActive > 0.5;
     var tgtRy = tgt.ry;
     if (spinLock){
@@ -901,13 +1087,13 @@
     cur.fy += (tgt.fy - cur.fy)*ease;
 
     if (!dragging){
-      dragVX *= 0.95;               // inertie
+      dragVX *= 0.95;               // inertia
       dragX += dragVX;
-      dragY *= 0.97;                // retour doux à plat
+      dragY *= 0.97;                // gentle return to flat
     }
-    if (!reduceMotion && !spinLock) idle += 0.0016;   // respiration permanente
+    if (!reduceMotion && !spinLock) idle += 0.0016;   // constant breathing
 
-    // Décalage de la bague dans le cadre (fraction du demi-écran visible à cette distance)
+    // Ring offset in the frame (fraction of the visible half-screen at this distance)
     var halfH = cur.z * Math.tan(FOV*Math.PI/360);
     var halfW = halfH * camera.aspect;
     ring.position.set(cur.fx*halfW, cur.fy*halfH, 0);
@@ -918,8 +1104,9 @@
     ring.rotation.x = cur.rx + dragY;
     ring.rotation.z = cur.rz;
 
-    // Ondes NFC
-    var nfcWant = nfcTarget * explorerActive;
+    // NFC waves
+    var nfcWant = explorerActive > 0.05 ? nfcTarget * explorerActive : 0;
+    if (explorerActive <= 0.05) nfcLevel = 0;
     nfcLevel += (nfcWant - nfcLevel) * 0.06;
     for (var i=0;i<waves.length;i++){
       var wv = waves[i];

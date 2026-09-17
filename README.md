@@ -1,44 +1,48 @@
-# VegaPay — page principale (curiolab.me)
+# Curio — homepage (curiolab.me)
 
-Page d'accueil « expérience » de la bague de paiement **VegaPay** : une bague modélisée
-procéduralement (Three.js) reste en fond fixe et s'oriente au fil du scroll, façon page produit Apple.
+Homepage "experience" for the **Curio** payment ring by CurioLab: a procedurally modelled ring
+(Three.js) stays fixed in the background and turns as you scroll, Apple product-page style.
 
-Tout tient dans un seul fichier, `index.html` (HTML + CSS + JS). Three.js r128 est chargé depuis cdnjs.
+Everything lives in one file, `index.html` (HTML + CSS + JS). Three.js r128 is loaded from cdnjs.
+The page is in English.
 
 ## Sections
 
-1. **Héro** — wordmark Vega✦Pay, bague de face.
-2. **Chapitres** (4) — céramique brossée, biseaux polis, gravure, sans batterie ; la bague change de cadrage à chaque chapitre.
-3. **Découvrez la bague** — la liste de caractéristiques à gauche (pastilles « + », flèches haut/bas) ;
-   au clic, la carte se déplie et la bague pivote / zoome sur le détail : finitions (nuancier qui
-   recolore la bague), céramique brossée, biseaux, gravure intérieure, paiement sans contact
-   (ondes NFC animées), sans batterie, tailles (sélecteur).
-4. **Comment ça marche** — trois étapes.
-5. **Regardez-la de plus près** — la bague se fait tourner à la souris ou au doigt (aussi possible dans l'explorateur).
+1. **Hero** — Curio✦ wordmark, ring face on.
+2. **Why Businesses Trust Our Expertise** — intro, "Get In Touch", and three cards (Our Expertise,
+   Strong And Reliable Partnerships, Proven Track Record). The ring peeks in under the text.
+3. **Our Partners** — Digiseq, Universal Smart Cards, Mastercard, Visa, Infineon, NXP
+   (text wordmarks; swap in real logo images inside `.logos` when available).
+4. **Discover the ring** — feature list on the left (pills, up/down arrows); on click the card unfolds
+   and the ring turns / zooms on the detail: finishes (swatches recolour the ring), brushed ceramic,
+   mirror-polished bevels, inner engraving, contactless payment (NFC waves), no battery, sizes.
+5. **How it works** — three steps.
+6. **From Your Idea To Implementation Of Every Aspect** — six service cards + "Learn More".
+7. **Take a closer look** — drag the ring with mouse or finger (also works in the explorer).
+8. **Footer** — address, email, legal.
 
-## Lancer en local
+## Run locally
 
-Ouvrez simplement `index.html` dans un navigateur, ou servez le dossier :
+Open `index.html` in a browser, or serve the folder:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-## Personnaliser
+## Customise
 
-En tête du script dans `index.html` :
+At the top of the script in `index.html`:
 
-- `ENGRAVING` : texte gravé à l'intérieur.
-- `FINISHES` : finitions (bande, biseaux, gravure, pastille).
-- `SIZES` : tailles proposées.
-- `FEATURES` : caractéristiques de l'explorateur, avec la vue de la bague pour chacune
-  (`z` distance caméra, `rx` inclinaison, `ry` rotation, `rz` roulis, `fx`/`fy` décalage dans l'écran,
-  `spin` angle figé, `nfc` ondes).
-- `VIEWS` : cadrages des autres sections (héro, chapitres, comment ça marche, closer).
+- `ENGRAVING` — text engraved inside the ring.
+- `FINISHES` — finishes (band, bevels, engraving, swatch colours).
+- `SIZES` — available sizes.
+- `FEATURES` — explorer features, each with its ring view
+  (`z` camera distance, `rx` tilt, `ry` turn, `rz` roll, `fx`/`fy` offset in the frame, `spin` frozen angle, `nfc` waves).
+- `VIEWS` — ring framing for every other section (hero, why, partners, how, idea, closer).
 
-Les textes des sections sont directement dans le HTML.
+Section copy is directly in the HTML.
 
-## Déployer
+## Deploy
 
-Hébergeur statique au choix (GitHub Pages, Netlify, Vercel, Cloudflare Pages…). Pour GitHub Pages
-avec le domaine curiolab.me, ajoutez un fichier `CNAME` contenant `curiolab.me` et configurez les DNS.
+Any static host (GitHub Pages, Netlify, Vercel, Cloudflare Pages…). For GitHub Pages on curiolab.me,
+add a `CNAME` file containing `curiolab.me` and point the DNS at GitHub.
