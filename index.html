@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CurioLab — La bague qui paie</title>
+  <meta name="description" content="Curio Ring, la bague de paiement sans contact de CurioLab. Sans batterie, sans recharge, sans téléphone. Payez d'un geste." />
+  <meta property="og:title" content="CurioLab — La bague qui paie" />
+  <meta property="og:description" content="La bague de paiement sans contact. Sans batterie, sans recharge, sans téléphone." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%23111' stroke-width='10'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.js",
+        "three/addons/": "./vendor/three/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <header class="nav" id="top">
+    <div class="nav__inner">
+      <a class="nav__brand" href="#top" aria-label="CurioLab, accueil">
+        <svg class="nav__mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="3.5"/></svg>
+        <span>CurioLab</span>
+      </a>
+      <nav class="nav__links" aria-label="Navigation principale">
+        <a href="#bague">La bague</a>
+        <a href="#explorer">Fonctionnalités</a>
+        <a href="#specs">Caractéristiques</a>
+        <a href="#comment">Comment ça marche</a>
+      </nav>
+      <div class="nav__actions">
+        <a class="btn btn--ghost" href="#comment">En savoir plus</a>
+        <a class="btn btn--primary" href="#precommander">Précommander</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="bague">
+      <div class="hero__copy">
+        <p class="eyebrow">Curio Ring</p>
+        <h1>Payez d’un geste.</h1>
+        <p class="lead">La bague de paiement sans contact. Sans batterie, sans recharge, sans téléphone. Juste vous.</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary btn--lg" href="#precommander">Précommander</a>
+          <a class="btn btn--link" href="#explorer">Découvrir la bague <span aria-hidden="true">›</span></a>
+        </div>
+      </div>
+      <div class="hero__stage">
+        <canvas id="hero-canvas" class="ring-canvas" aria-label="Bague Curio Ring en 3D"></canvas>
+        <p class="hero__hint">Faites glisser pour tourner la bague</p>
+      </div>
+    </section>
+
+    <!-- ============ EXPLORATEUR (section « comme dans la vidéo ») ============ -->
+    <section class="explorer" id="explorer">
+      <div class="explorer__head reveal">
+        <h2>Découvrez la bague.</h2>
+        <p>Sélectionnez une caractéristique pour la voir de près.</p>
+      </div>
+
+      <div class="explorer__grid">
+        <div class="explorer__side">
+          <div class="explorer__arrows" aria-label="Parcourir les caractéristiques">
+            <button class="arrow" id="feat-prev" type="button" aria-label="Caractéristique précédente">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="arrow" id="feat-next" type="button" aria-label="Caractéristique suivante">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <ul class="features" id="features" role="list"></ul>
+        </div>
+
+        <div class="explorer__stage">
+          <canvas id="explorer-canvas" class="ring-canvas" aria-label="Vue 3D interactive de la bague"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SPECS ============ -->
+    <section class="specs" id="specs">
+      <div class="specs__head reveal">
+        <h2>Pensée pour durer.</h2>
+        <p>Une bague que vous portez tous les jours, sans jamais y penser.</p>
+      </div>
+      <div class="specs__grid">
+        <article class="spec reveal">
+          <p class="spec__value">0</p>
+          <p class="spec__label">batterie. Jamais besoin de recharger.</p>
+        </article>
+        <article class="spec reveal">
+          <p class="spec__value">5 ATM</p>
+          <p class="spec__label">étanche. Douche, piscine, mer.</p>
+        </article>
+        <article class="spec reveal">
+          <p class="spec__value">2,4 mm</p>
+          <p class="spec__label">d’épaisseur. Fine et légère.</p>
+        </article>
+        <article class="spec reveal">
+          <p class="spec__value">&lt; 1 s</p>
+          <p class="spec__label">pour payer. Approchez, c’est réglé.</p>
+        </article>
+        <article class="spec reveal">
+          <p class="spec__value">8</p>
+          <p class="spec__label">tailles, de 6 à 13. Guide gratuit inclus.</p>
+        </article>
+        <article class="spec reveal">
+          <p class="spec__value">100 %</p>
+          <p class="spec__label">titane et céramique. Hypoallergénique.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ COMMENT ÇA MARCHE ============ -->
+    <section class="how" id="comment">
+      <div class="how__head reveal">
+        <h2>Comment ça marche.</h2>
+      </div>
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step__num">1</span>
+          <h3>Choisissez votre taille</h3>
+          <p>Commandez votre bague, ou recevez d’abord notre baguier gratuit pour trouver la taille parfaite.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step__num">2</span>
+          <h3>Activez-la dans l’app</h3>
+          <p>Associez votre carte en deux minutes depuis l’application CurioLab. Vos données restent chiffrées.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step__num">3</span>
+          <h3>Payez d’un geste</h3>
+          <p>Approchez votre main du terminal. Partout où le sans contact est accepté, votre bague fonctionne.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="cta" id="precommander">
+      <div class="cta__inner reveal">
+        <h2>Vos mains, votre portefeuille.</h2>
+        <p>Précommandez la Curio Ring et recevez le baguier offert.</p>
+        <form class="cta__form" onsubmit="event.preventDefault(); this.querySelector('.cta__ok').hidden=false;">
+          <label class="sr-only" for="email">Votre adresse e‑mail</label>
+          <input id="email" type="email" required placeholder="Votre adresse e‑mail" />
+          <button class="btn btn--primary btn--lg" type="submit">Je précommande</button>
+          <p class="cta__ok" hidden>Merci ! Nous vous écrivons très vite.</p>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>© <span id="year"></span> CurioLab. Tous droits réservés.</p>
+      <nav aria-label="Liens de bas de page">
+        <a href="#bague">La bague</a>
+        <a href="#specs">Caractéristiques</a>
+        <a href="#comment">Comment ça marche</a>
+        <a href="mailto:hello@curiolab.me">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
