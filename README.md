@@ -1,46 +1,44 @@
-# CurioLab — page principale (curiolab.me)
+# VegaPay — page principale (curiolab.me)
 
-Page d'accueil qui met en avant la bague de paiement **Curio Ring**, avec une bague
-recréée en 3D (Three.js) et une section « explorateur » inspirée des pages produit Apple :
-une liste de caractéristiques à gauche, la bague à droite qui tourne et zoome sur chaque
-détail lorsqu'on clique.
+Page d'accueil « expérience » de la bague de paiement **VegaPay** : une bague modélisée
+procéduralement (Three.js) reste en fond fixe et s'oriente au fil du scroll, façon page produit Apple.
 
-## Contenu du site
+Tout tient dans un seul fichier, `index.html` (HTML + CSS + JS). Three.js r128 est chargé depuis cdnjs.
 
-| Fichier | Rôle |
-| --- | --- |
-| `index.html` | Structure de la page (nav, hero, explorateur, caractéristiques, comment ça marche, précommande, footer) |
-| `styles.css` | Style (esthétique Apple : pastilles, cartes dépliantes, grille responsive) |
-| `main.js` | Bague 3D procédurale, textures (brossage, gravure), animation des vues, logique de l'explorateur |
-| `vendor/three/` | Three.js (r170) vendorisé, aucun CDN nécessaire |
+## Sections
 
-Site 100 % statique : aucun build, aucune dépendance à installer.
+1. **Héro** — wordmark Vega✦Pay, bague de face.
+2. **Chapitres** (4) — céramique brossée, biseaux polis, gravure, sans batterie ; la bague change de cadrage à chaque chapitre.
+3. **Découvrez la bague** — la liste de caractéristiques à gauche (pastilles « + », flèches haut/bas) ;
+   au clic, la carte se déplie et la bague pivote / zoome sur le détail : finitions (nuancier qui
+   recolore la bague), céramique brossée, biseaux, gravure intérieure, paiement sans contact
+   (ondes NFC animées), sans batterie, tailles (sélecteur).
+4. **Comment ça marche** — trois étapes.
+5. **Regardez-la de plus près** — la bague se fait tourner à la souris ou au doigt (aussi possible dans l'explorateur).
 
 ## Lancer en local
 
-Les modules ES doivent être servis en HTTP (pas en `file://`) :
+Ouvrez simplement `index.html` dans un navigateur, ou servez le dossier :
 
 ```bash
 python3 -m http.server 8000
-# puis ouvrir http://localhost:8000
 ```
 
 ## Personnaliser
 
-Tout le contenu éditable se trouve en haut de `main.js` :
+En tête du script dans `index.html` :
 
-- `ENGRAVING` : texte gravé à l'intérieur de l'anneau.
-- `FINISHES` : les finitions (couleur de la bande brossée, des chanfreins polis, de la pastille et de la gravure).
-- `SIZES` : les tailles proposées.
-- `FEATURES` : les caractéristiques de l'explorateur. Pour chacune : titre, texte, et la
-  `pose` de la bague (`rx`, `ry`, `rz` en radians, `dist` = distance caméra, `px`/`py` = décalage).
-  `spin` fixe l'angle du plateau tournant, `nfc: true` affiche les ondes sans contact.
+- `ENGRAVING` : texte gravé à l'intérieur.
+- `FINISHES` : finitions (bande, biseaux, gravure, pastille).
+- `SIZES` : tailles proposées.
+- `FEATURES` : caractéristiques de l'explorateur, avec la vue de la bague pour chacune
+  (`z` distance caméra, `rx` inclinaison, `ry` rotation, `rz` roulis, `fx`/`fy` décalage dans l'écran,
+  `spin` angle figé, `nfc` ondes).
+- `VIEWS` : cadrages des autres sections (héro, chapitres, comment ça marche, closer).
 
-Les textes des autres sections (hero, chiffres clés, étapes, précommande) sont directement dans `index.html`.
-Les chiffres (5 ATM, 2,4 mm, tailles 6 à 13…) sont des valeurs indicatives à remplacer par les vraies.
+Les textes des sections sont directement dans le HTML.
 
 ## Déployer
 
-N'importe quel hébergeur statique convient (GitHub Pages, Netlify, Vercel, Cloudflare Pages…) :
-déployez le dossier tel quel. Pour GitHub Pages avec le domaine curiolab.me, ajoutez un fichier
-`CNAME` contenant `curiolab.me` et configurez les DNS chez votre registrar.
+Hébergeur statique au choix (GitHub Pages, Netlify, Vercel, Cloudflare Pages…). Pour GitHub Pages
+avec le domaine curiolab.me, ajoutez un fichier `CNAME` contenant `curiolab.me` et configurez les DNS.
