@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Curio — NFC wearables for your brand</title>
+<meta name="description" content="Next-gen NFC wearable products by CurioLab for brands, issuers and events: smart active rings, ceramic and metal payment rings, wristbands and keyrings with a payment-certified secure element.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://curiolab.me/products.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Curio by CurioLab">
+<meta property="og:title" content="Curio — NFC wearables for your brand">
+<meta property="og:description" content="Rings, wristbands and keyrings with a payment-certified secure element, under your name.">
+<meta property="og:url" content="https://curiolab.me/products.html">
+<meta property="og:image" content="https://curiolab.me/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/site.css">
+<script>try{ if (localStorage.getItem('curio-theme') === 'dark') document.documentElement.setAttribute('data-theme','dark'); }catch(e){}</script>
+<style>
+  html{ scroll-behavior:smooth; }
+  #stage{ position:fixed; inset:0; z-index:0; pointer-events:none; }
+  #stage canvas{ display:block; width:100%; height:100%; }
+  .veil{ position:fixed; inset:0; z-index:1; pointer-events:none; background:radial-gradient(120% 90% at 50% 110%, rgba(var(--bg-rgb),.55), transparent 55%); }
+  main{ position:relative; z-index:2; }
+
+  /* ---------- Hero ---------- */
+  .hero{ min-height:min(62vh, 560px); display:flex; align-items:center; padding-top:6vh; padding-bottom:4vh; }
+  .hero .copy{ max-width:34em; }
+  .hero h1{
+    font-family:'Cormorant Garamond',serif; font-weight:500;
+    font-size:clamp(42px, 6vw, 76px); line-height:1.05; letter-spacing:-.01em; margin-bottom:.35em;
+    text-shadow:0 0 10px var(--bg), 0 0 24px var(--bg);
+  }
+  .hero .lede{ max-width:30em; }
+  .hero .actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:28px; }
+  .partner b{ font-weight:500; letter-spacing:.06em; color:var(--ink); }
+
+  /* ---------- Why businesses trust us ---------- */
+  .trust{ padding:4vh 0 10vh; }
+  .trust .grid{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr); gap:clamp(28px, 5vw, 80px); align-items:start; }
+  .trust .intro{ max-width:34em; }
+  .trust .cards{ grid-template-columns:1fr; }
+  .trust .card-b{ display:flex; gap:20px; align-items:center; justify-content:space-between; }
+
+  /* ---------- Products ---------- */
+  .products{ padding:4vh 0 10vh; }
+  .products .head{ max-width:40em; margin-bottom:34px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .product{ display:flex; flex-direction:column; padding:0; overflow:hidden; transition:transform .3s ease, border-color .3s ease; }
+  .product:hover{ transform:translateY(-3px); border-color:var(--blue); }
+  .product .text{ padding:26px 26px 22px; }
+  .product h3{ font-size:clamp(20px, 1.8vw, 24px); display:flex; align-items:center; gap:12px; }
+  .product .tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+  .product .tag{ font-size:12px; letter-spacing:.03em; color:var(--ink-dim); border:1px solid var(--hairline); border-radius:999px; padding:4px 10px; }
+  .product .ask{ margin-top:14px; }
+  .product figure{ margin-top:auto; border-top:1px solid var(--hairline); aspect-ratio:4/3; overflow:hidden; background:var(--bg-soft); }
+  .product img{ width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+  .product:hover img{ transform:scale(1.03); }
+  .product--wide{ grid-column:1 / -1; max-width:560px; justify-self:center; width:100%; }
+  /* Filters: dim the products that don't match */
+  .filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 22px; }
+  .filters span{ font-size:13px; color:var(--ink-dim); margin-right:4px; }
+  .chip{ border:1px solid var(--hairline); border-radius:999px; padding:7px 14px; font-size:13.5px; color:var(--ink-dim); transition:all .2s ease; }
+  .chip:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .chip[aria-pressed="true"]{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .product.is-dim{ opacity:.28; filter:grayscale(.6); transform:none; }
+  .product.is-dim:hover{ opacity:.6; }
+  .product{ transition:transform .3s ease, border-color .3s ease, opacity .3s ease, filter .3s ease; }
+
+  /* Comparison table */
+  .compare{ padding:0 0 10vh; }
+  .compare .head{ max-width:40em; margin-bottom:22px; }
+  .tableWrap{ overflow-x:auto; border:1px solid var(--card-line); border-radius:18px; background:var(--card-bg); box-shadow:var(--card-shadow); }
+  table{ width:100%; border-collapse:collapse; font-size:14.5px; min-width:720px; }
+  th, td{ padding:14px 16px; text-align:left; border-top:1px solid var(--hairline); vertical-align:top; }
+  thead th{ border-top:0; font-weight:400; color:var(--ink-dim); font-size:13px; letter-spacing:.03em; }
+  tbody th{ font-weight:400; white-space:nowrap; }
+  td{ color:var(--ink-dim); }
+  td .yes{ color:var(--ok); font-weight:500; }
+  td .no{ color:var(--hairline); }
+  td .opt{ color:var(--blue-ink); }
+  tbody tr:hover{ background:var(--glass); }
+
+  /* ---------- Services ---------- */
+  .services{ padding:0 0 10vh; }
+  .services .head{ max-width:42em; margin-bottom:30px; }
+  .services .cards{ grid-template-columns:repeat(3, 1fr); }
+  .services .card-b{ min-height:230px; }
+  .services .card-b .icon{ position:absolute; top:22px; right:22px; }
+  .services .card-b h3{ margin-top:70px; }
+
+  /* ---------- Consultation ---------- */
+  .consult{ padding:0 0 12vh; }
+  .consult .card{ border-radius:22px; padding:clamp(28px, 4vw, 48px); display:grid; grid-template-columns:1.2fr 1fr; gap:40px; align-items:center; }
+  .consult .h2{ margin-bottom:.3em; }
+  .consult .cols{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:26px; }
+  .consult h4{ font-weight:400; font-size:17px; margin:14px 0 6px; }
+  .consult .cols p{ color:var(--ink-dim); font-size:14.5px; line-height:1.6; }
+  .consult .cta{ text-align:center; }
+  .consult .cta .btn{ width:100%; max-width:320px; }
+  .consult .cta .note{ color:var(--ink-dim); font-size:13.5px; margin-top:12px; line-height:1.5; }
+
+  @media (min-width:1600px){
+    .grid{ grid-template-columns:repeat(3, 1fr); }
+    .product--wide{ grid-column:auto; max-width:none; }
+    .product p{ font-size:16.5px; }
+    table{ font-size:16px; }
+    th, td{ padding:16px 20px; }
+  }
+  @media (max-width:1000px){ .trust .grid{ grid-template-columns:1fr; } .services .cards{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:900px){ .consult .card{ grid-template-columns:1fr; } }
+  @media (max-width:680px){
+    .hero{ align-items:flex-end; min-height:78vh; padding-top:38vh; }
+    .grid, .services .cards{ grid-template-columns:1fr; }
+    .services .card-b{ min-height:0; }
+    .product--wide{ max-width:none; }
+    .consult .cols{ grid-template-columns:1fr; }
+    .trust .card-b{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body class="padded">
+<a class="skip" href="#products">Skip to content</a>
+
+<div id="stage"></div>
+<div class="veil"></div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="index.html">Curio<span class="star">✦</span></a>
+  <nav class="nav__links" aria-label="Main">
+    <a href="index.html">Home</a>
+    <a href="products.html" aria-current="page">Products</a>
+    <a href="mobile-app.html">Mobile App</a>
+    <a href="size.html">Ring size</a>
+    <a class="nav__size" href="size.html" hidden></a>
+    <a class="nav__cta" href="contact.html">Contact</a>
+  </nav>
+  <div class="nav__right">
+    <div class="nav__theme" role="group" aria-label="Colour theme">
+      <button type="button" data-theme-set="light" aria-pressed="true" aria-label="Light mode" title="Light"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      <button type="button" data-theme-set="dark" aria-pressed="false" aria-label="Dark mode" title="Dark"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+    </div>
+    <button class="nav__burger" id="burger" type="button" aria-label="Menu" aria-expanded="false"><span></span></button>
+  </div>
+</header>
+
+<main>
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="copy">
+        <p class="eyebrow partner">For your brand · CurioLab in partnership with <b>DIGISEQ</b></p>
+        <h1>Next-Gen NFC Wearable Products.</h1>
+        <p class="lede">Rings, wristbands and keyrings with a payment-certified secure element inside, under your name. One tap, any contactless terminal, anywhere in the world — no screen, no battery, no charging.</p>
+        <div class="actions">
+          <a class="btn" href="contact.html?who=business">Book a consultation</a>
+          <a class="btn btn--ghost" href="#products">See the products ↓</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Why businesses trust us ===== -->
+  <section class="trust" id="trust">
+    <div class="wrap grid">
+      <div class="intro reveal">
+        <p class="eyebrow">Why choose us</p>
+        <h2 class="h2">Why businesses trust our expertise.</h2>
+        <p class="lede">With the customer's best interest in mind, we offer our expertise and industry knowledge to deliver solutions with innovation and efficiency.</p>
+      </div>
+      <div class="cards">
+        <article class="card-b reveal">
+          <div>
+            <h3>Our expertise</h3>
+            <ul>
+              <li>Wearables manufacturing</li>
+              <li>Advanced engineering</li>
+              <li>Hardware-software integration</li>
+              <li>Rigorous quality control</li>
+            </ul>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></span>
+        </article>
+        <article class="card-b reveal">
+          <div>
+            <h3>Strong and reliable partnerships</h3>
+            <ul>
+              <li>End-to-end logistics providers</li>
+              <li>Prepaid and tokenisation integrations</li>
+              <li>Bespoke and mass product manufacturing partners</li>
+            </ul>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M3 12h3M18 12h3"/></svg></span>
+        </article>
+        <article class="card-b reveal">
+          <div>
+            <h3>Proven track record</h3>
+            <p>Partnering with Digiseq, a number of successful projects have been delivered, from common wearable products to sophisticated wearable-based event management solutions now available commercially.</p>
+          </div>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5 7 21l5-2.5L17 21l-1.5-7.5"/></svg></span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Products ===== -->
+  <section class="products" id="products">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">Form factors</p>
+        <h2 class="h2">One secure element, five ways to wear it.</h2>
+        <p class="lede">Every product below carries the same certified payment chip as the Curio ring. Pick the form factor that fits your customers — or combine several under your brand.</p>
+      </div>
+
+      <div class="filters reveal" id="filters" role="group" aria-label="Filter products">
+        <span>Show</span>
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+        <button class="chip" type="button" data-filter="fitness" aria-pressed="false">Fitness</button>
+        <button class="chip" type="button" data-filter="promoready" aria-pressed="false">PromoReady</button>
+        <button class="chip" type="button" data-filter="events" aria-pressed="false">Events &amp; festivals</button>
+        <button class="chip" type="button" data-filter="premium" aria-pressed="false">Premium materials</button>
+        <button class="chip" type="button" data-filter="keys" aria-pressed="false">No jewellery</button>
+      </div>
+
+      <div class="grid">
+        <article class="product card reveal" data-tags="payments fitness">
+          <div class="text">
+            <h3><span class="icon icon--s" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h3l2-5 3 10 2-6 1 2h5"/></svg></span>Smart Active Rings</h3>
+            <p>A highlight of wearable form factors, the smart active ring combines fitness functionality with contactless payments, making it the most versatile smart ring in the world.</p>
+            <div class="tags"><span class="tag">Fitness</span><span class="tag">Payments</span></div>
+            <a class="textlink ask" href="contact.html?who=business&product=smart-active-rings">Ask about this →</a>
+          </div>
+          <figure><img src="assets/products/smart-active-rings.jpg" alt="Three smart active rings in white, pink and black, sensors visible inside the band" loading="lazy"></figure>
+        </article>
+
+        <article class="product card reveal" data-tags="payments premium">
+          <div class="text">
+            <h3><span class="icon icon--s" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/></svg></span>Ceramic Rings</h3>
+            <p>Simple and convenient, ceramic rings are one of the most convenient accessories, catering to a wide audience. They work seamlessly with all contactless payment terminals worldwide.</p>
+            <div class="tags"><span class="tag">Payments</span><span class="tag">Any terminal</span></div>
+            <a class="textlink ask" href="contact.html?who=business&product=ceramic-rings">Ask about this →</a>
+          </div>
+          <figure><img src="assets/products/ceramic-rings.jpg" alt="A hand wearing a black ceramic ring paying on a contactless terminal" loading="lazy"></figure>
+        </article>
+
+        <article class="product card reveal" data-tags="payments promoready premium">
+          <div class="text">
+            <h3><span class="icon icon--s" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 8l6-4 6 4v8l-6 4-6-4z"/><path d="M6 8l6 4 6-4M12 12v8"/></svg></span>Metal Rings</h3>
+            <p>Metal NFC rings are premium products, highlighting one's individuality while providing extra functionality like payments and PromoReady. Steel or silver, titanium or gold plating — all options available.</p>
+            <div class="tags"><span class="tag">Payments</span><span class="tag">PromoReady</span><span class="tag">Steel · Silver · Titanium · Gold</span></div>
+            <a class="textlink ask" href="contact.html?who=business&product=metal-rings">Ask about this →</a>
+          </div>
+          <figure><img src="assets/products/metal-rings.jpg" alt="Two polished metal rings on a wooden table next to a coffee cup" loading="lazy"></figure>
+        </article>
+
+        <article class="product card reveal" data-tags="payments events premium">
+          <div class="text">
+            <h3><span class="icon icon--s" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M8 8V5h8v3M8 16v3h8v-3"/></svg></span>Wristbands</h3>
+            <p>For users who prefer wristbands or bracelets to rings, a premium leather or ceramic wristband can be offered. And if a festival or a silicone band is required, they can also be augmented with payment functionality.</p>
+            <div class="tags"><span class="tag">Leather</span><span class="tag">Ceramic</span><span class="tag">Silicone</span><span class="tag">Events</span></div>
+            <a class="textlink ask" href="contact.html?who=business&product=wristbands">Ask about this →</a>
+          </div>
+          <figure><img src="assets/products/wristbands.jpg" alt="A wrist with a leopard-print wristband paying on a card terminal" loading="lazy"></figure>
+        </article>
+
+        <article class="product card product--wide reveal" data-tags="payments keys events">
+          <div class="text">
+            <h3><span class="icon icon--s" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M15 8l2 2M18 5l2 2"/></svg></span>Keyrings</h3>
+            <p>Invisible, yet always within reach, payment-enabled keyrings are a very flexible solution — have one on your home or car keys and you'll never be left without means of paying.</p>
+            <div class="tags"><span class="tag">Payments</span><span class="tag">Keys</span></div>
+            <a class="textlink ask" href="contact.html?who=business&product=keyrings">Ask about this →</a>
+          </div>
+          <figure><img src="assets/products/keyrings.jpg" alt="A black leather keyring with a contactless symbol and a brass ring" loading="lazy"></figure>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Which one for your case ===== -->
+  <section class="compare" id="compare">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">At a glance</p>
+        <h2 class="h2">Which one for your case?</h2>
+        <p class="lede">Same secure element everywhere; the form factor decides the rest.</p>
+      </div>
+      <div class="tableWrap reveal">
+        <table>
+          <thead>
+            <tr><th scope="col">Product</th><th scope="col">Payments</th><th scope="col">Fitness</th><th scope="col">PromoReady</th><th scope="col">Materials</th><th scope="col">Best for</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Smart Active Rings</th><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="no">—</span></td><td>Ceramic, sensors inside</td><td>Health &amp; lifestyle brands, premium retail</td></tr>
+            <tr><th scope="row">Ceramic Rings</th><td><span class="yes">✓</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td><td>Ceramic, four finishes</td><td>Banks &amp; issuers, wide audiences</td></tr>
+            <tr><th scope="row">Metal Rings</th><td><span class="yes">✓</span></td><td><span class="no">—</span></td><td><span class="yes">✓</span></td><td>Steel, silver, titanium, gold plating</td><td>Jewellery brands, loyalty programmes</td></tr>
+            <tr><th scope="row">Wristbands</th><td><span class="yes">✓</span></td><td><span class="no">—</span></td><td><span class="opt">on request</span></td><td>Leather, ceramic, silicone</td><td>Festivals, events, hospitality</td></tr>
+            <tr><th scope="row">Keyrings</th><td><span class="yes">✓</span></td><td><span class="no">—</span></td><td><span class="opt">on request</span></td><td>Leather, metal</td><td>Corporate gifts, people who don't wear jewellery</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== From your idea to implementation ===== -->
+  <section class="services" id="services">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">Services</p>
+        <h2 class="h2">From your idea to implementation of every aspect.</h2>
+        <p class="lede">Integrating wearable products into your portfolio has never been easier.</p>
+      </div>
+      <div class="cards">
+        <article class="card-b reveal">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/><path d="M7 8h6M7 11h4"/></svg></span>
+          <h3>Payment-enabled wearables</h3>
+          <p>Integrating a payment-certified secure element, these wearables enable contactless payments with a simple tap. Compatible with any terminal in the world, wearables bring payments to new levels of convenience.</p>
+        </article>
+        <article class="card-b reveal">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 15a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.5 3.5 0 0 1 17 15H7z"/><path d="M12 15v5M9 20h6"/></svg></span>
+          <h3>Specialized wearables</h3>
+          <p>Your imagination and needs are the only limit — from fitness rings to healthcare and emergency contactless bracelets, to branded event wearables that augment the guest experience.</p>
+        </article>
+        <article class="card-b reveal">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg></span>
+          <h3>Fan ID</h3>
+          <p>Fan ID is the secure way to manage visitor identification and access, preventing ticket fraud and ensuring only verified guests attend. Fan ID can also cover transit, hotel access and a customised user experience.</p>
+        </article>
+        <article class="card-b reveal">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3v1a3 3 0 0 0-2 3 3 3 0 0 0 2 3v1a3 3 0 0 0 3 3h3V4H9z"/><path d="M15 4a3 3 0 0 1 3 3v1a3 3 0 0 1 2 3 3 3 0 0 1-2 3v1a3 3 0 0 1-3 3h-3V4h3z"/></svg></span>
+          <h3>Consulting</h3>
+          <p>Expert advice to align your technology strategy with your business goals and boost overall efficiency.</p>
+        </article>
+        <article class="card-b reveal">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 5.5a3.5 3.5 0 0 0 4 4L8 20l-4-4L14.5 5.5z"/><path d="M15 13l4 4"/></svg></span>
+          <h3>Wearable apps</h3>
+          <p>We help you build your own mobile apps that integrate with wearables — from simple white-label apps to SDKs for mobile platforms, for a seamless customer journey.</p>
+        </article>
+        <article class="card-b reveal">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6"/><path d="M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg></span>
+          <h3>Event management</h3>
+          <p>Reliable and flexible event management integrating conventional and wearable-based features — VIP tracking and management, personalised content delivery via PromoReady, vouchers, cloakroom and more.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Consultation ===== -->
+  <section class="consult" id="consult">
+    <div class="wrap">
+      <div class="card reveal">
+        <div>
+          <p class="eyebrow">Free consultation</p>
+          <h2 class="h2">Book a consultation.</h2>
+          <p class="lede">We help you make confident technology decisions that fit your goals.</p>
+          <div class="cols">
+            <div>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.2-6-10a6 6 0 0 1 12 0c0 4.8-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg></span>
+              <h4>Our address</h4>
+              <p>ALDEN TECHNOLOGY FZCO<br>Building A1, Dubai Silicon Oasis<br>Dubai, UAE</p>
+            </div>
+            <div>
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v10H8l-4 3z"/><path d="M9 10h6M9 13h3"/></svg></span>
+              <h4>Our contact information</h4>
+              <p>Email: <a class="textlink" style="margin-top:0" href="mailto:hello@curiolab.me">hello@curiolab.me</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="cta">
+          <a class="btn" href="contact.html?who=business">Book a consultation →</a>
+          <p class="note">Tell us about your project — form factor, volumes, branding — and we'll come back with options and timelines.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site" id="contact">
+  <div class="cols">
+    <div>
+      <div class="fm">Curio✦</div>
+      <p>The payment ring by CurioLab, in partnership with Digiseq. Modelled procedurally and rendered in real time in your browser.</p>
+    </div>
+    <div>
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products for business</a></li>
+        <li><a href="mobile-app.html">Mobile app</a></li>
+        <li><a href="mobile-app.html#faq">FAQ</a></li>
+        <li><a href="size.html">Find your ring size</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Address</h4>
+      <p>ALDEN TECHNOLOGY FZCO<br>Building A1, Dubai Silicon Oasis, Dubai, UAE</p>
+    </div>
+    <div>
+      <h4>Email</h4>
+      <p><a href="mailto:hello@curiolab.me">hello@curiolab.me</a></p>
+      <h4 style="margin-top:14px">For your brand</h4>
+      <p><a class="textlink" style="margin-top:0" href="contact.html?who=business">Book a consultation →</a></p>
+    </div>
+  </div>
+  <div class="legal">
+    <span>© <span id="year"></span> Alden Limited. All rights reserved.</span>
+    <span><a href="legal.html">Legal &amp; privacy</a> · curiolab.me</span>
+  </div>
+</footer>
+
+<script src="assets/three.min.js"></script>
+<script src="assets/ring.js"></script>
+<script src="assets/nav.js"></script>
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Filters ---------- */
+  var chips = Array.prototype.slice.call(document.querySelectorAll('#filters .chip'));
+  var products = Array.prototype.slice.call(document.querySelectorAll('.product'));
+  chips.forEach(function(c){
+    c.addEventListener('click', function(){
+      var f = c.getAttribute('data-filter');
+      chips.forEach(function(x){ x.setAttribute('aria-pressed', String(x === c)); });
+      products.forEach(function(p){ p.classList.toggle('is-dim', f !== 'all' && (' ' + p.getAttribute('data-tags') + ' ').indexOf(' ' + f + ' ') < 0); });
+    });
+  });
+
+  if (typeof THREE === 'undefined') return;
+  var stage = document.getElementById('stage');
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true }); } catch(e){ return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  stage.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  var FOV = 34;
+  var camera = new THREE.PerspectiveCamera(FOV, window.innerWidth/window.innerHeight, 0.1, 100);
+  scene.environment = CurioRing.studioEnv(renderer);
+  CurioRing.lights(scene);
+  var R = CurioRing.build(renderer, {});
+  var ring = R.ring;
+  scene.add(ring);
+
+  // Framing: right of the hero copy on wide screens, above it on phones; slides up and fades on scroll
+  var idle = 0.55, z = 6.4;
+  function frame(){
+    var vh = window.innerHeight, narrow = window.innerWidth <= 680;
+    var p = Math.min(1, window.scrollY / (vh*0.9));
+    stage.style.opacity = String(1 - p);
+    if (p < 1){
+      if (!reduceMotion) idle += 0.0016;
+      var zz = narrow ? z * 1.45 / (window.innerWidth/vh) : z * Math.max(1, 1.15/(window.innerWidth/vh));
+      var halfH = zz * Math.tan(FOV*Math.PI/360), halfW = halfH * camera.aspect;
+      ring.position.set((narrow ? 0 : 0.5) * halfW, ((narrow ? 0.5 : 0.02) + p*1.6) * halfH, 0);
+      camera.position.set(0, 0, zz);
+      camera.lookAt(0, 0, 0);
+      ring.rotation.set(1.1 + p*0.4, idle, 0.12);
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+  window.addEventListener('resize', function(){
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
+</body>
+</html>

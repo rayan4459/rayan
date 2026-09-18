@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://curiolab.me/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://curiolab.me/products.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://curiolab.me/mobile-app.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://curiolab.me/size.html</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://curiolab.me/contact.html</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://curiolab.me/mobile-app.html#faq</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+</urlset>
